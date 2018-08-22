@@ -68,10 +68,11 @@ function main(){
 
 	echo -n -e "\n\nComeçando a processar o texto passado...\n"
 
-	unset main_string; unset treat_string;
-
-	main_string="$(cat "$1")";		#Original file copy string...
+	main_string=$(cat "$1");		#Original file copy string...
 	treat_string="$main_string";	#String to be treated and after applied to the main String;
+	
+	last_lines=$(wc -c <"$1");								#Original number of bytes on the file...
+	last_lines=$(echo "$last_lines-${#main_string}-1"|bc);	#Diference found is the last lines missing! (-1 for some reason I don't know...)
 
 	if [ "$2" == '-AP' ] ; then
 
@@ -104,6 +105,7 @@ function main(){
 						fi
 					done
 
+					for (( j=0; j < $last_lines; j++)) ; do main_string="$main_string\n##ju5t_4_1in3##"; done	#This treatment is just to put an id on where there will be just an empty line at the final of the program!
 					main_string="$main_string\n$treat_string"	#The main String is concatenated with the new transformed inicial string, recursivelly, until all the iterations asked be passed;
 				done
 
@@ -125,8 +127,10 @@ function main(){
 
 	fi
 
-	{ echo -n -e "$main_string"; } >"${1%.txt}_pos-processed.txt"
-	unset main_string; unset treat_string;
+	{ echo -n -e "$main_string"; } >"${1%.txt}_pos-processed.txt"	
+	sed -i 's/^##ju5t_4_1in3##//g' "${1%.txt}_pos-processed.txt"
+	
+	unset main_string; unset treat_string; unset last_lines;
 
 	echo -n -e "\nEncerrando script normalmente. Trabalho concluído!\n\n"
 
