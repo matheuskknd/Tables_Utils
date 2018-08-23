@@ -66,7 +66,7 @@ return 0;}
 
 function main(){
 
-	echo -n -e "\n\nComeçando a processar o texto passado...\n"
+	echo -n -e "\n\nStarting to process the text...\n"
 
 	main_string=$(cat "$1");		#Original file copy string...
 	treat_string="$main_string";	#String to be treated and after applied to the main String;
@@ -132,7 +132,7 @@ function main(){
 	
 	unset main_string; unset treat_string; unset last_lines;
 
-	echo -n -e "\nEncerrando script normalmente. Trabalho concluído!\n\n"
+	echo -n -e "\nClosing Script normally. Job is finished!\n\n"
 
 exit 0;}
 
