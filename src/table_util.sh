@@ -76,15 +76,6 @@ function main(){
 	rm '.BASH_TEMP_FILE.txt'
 
 #To print a specific line use: sed -n "$var"p "file_name" ou sed -n "$var1","$var2"p "file_name" para imprimir as linhas de "$var1" a "$var2"
-	
-<<<<<<< HEAD
-#	last_lines=$(wc -l "$1"|cut -d' ' -f1);					#Original number of bytes on the file...
-#	last_lines=$(echo "$last_lines-${#main_string}-1"|bc);	#Diference found is the last lines missing! (-1 for some reason I don't know...)
-=======
-	last_lines=$(wc -c <"$1");								#Original number of bytes on the file...
-	last_lines=$(echo "$last_lines-${#main_string}-1"|bc);	#Diference found is the last lines missing! (-1 for some reason I don't know...)
-#Im making this line just to make conflic with the last real commit that is not pushed yet! Just for learning...
->>>>>>> 148e0b4b1a7b1f8763692f7ea41aef1ac174e6e9
 
 	if [ "$2" == '-AP' ] ; then
 
@@ -139,13 +130,8 @@ function main(){
 
 	fi
 
-<<<<<<< HEAD
-	{ echo -n -e "$main_string"; } >"${1%.txt}_pos-processed.txt"
-	sed -i 's/^##ju5t_4_1in3##//g' "${1%.txt}_pos-processed.txt"
-=======
 	{ echo -n -e "$main_string"; } >"${1%.txt}_pos-processed.txt"	
 	sed -i 's/^#@empty_cell&#//g' "${1%.txt}_pos-processed.txt"
->>>>>>> 148e0b4b1a7b1f8763692f7ea41aef1ac174e6e9
 	
 	unset main_string; unset treat_string; unset last_lines;
 
