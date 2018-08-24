@@ -66,7 +66,7 @@ return 0;}
 
 function main(){
 
-	echo -n -e "\n\nComeçando a processar o texto passado...\n"
+	echo -n -e "\n\nStarting to process the text...\n"
 
 	main_string=$(cat "$1");		#Original file copy string...
 	treat_string="$main_string";	#String to be treated and after applied to the main String;
@@ -77,8 +77,14 @@ function main(){
 
 #To print a specific line use: sed -n "$var"p "file_name" ou sed -n "$var1","$var2"p "file_name" para imprimir as linhas de "$var1" a "$var2"
 	
+<<<<<<< HEAD
 #	last_lines=$(wc -l "$1"|cut -d' ' -f1);					#Original number of bytes on the file...
 #	last_lines=$(echo "$last_lines-${#main_string}-1"|bc);	#Diference found is the last lines missing! (-1 for some reason I don't know...)
+=======
+	last_lines=$(wc -c <"$1");								#Original number of bytes on the file...
+	last_lines=$(echo "$last_lines-${#main_string}-1"|bc);	#Diference found is the last lines missing! (-1 for some reason I don't know...)
+#Im making this line just to make conflic with the last real commit that is not pushed yet! Just for learning...
+>>>>>>> 148e0b4b1a7b1f8763692f7ea41aef1ac174e6e9
 
 	if [ "$2" == '-AP' ] ; then
 
@@ -111,7 +117,7 @@ function main(){
 						fi
 					done
 
-					for (( j=0; j < $last_lines; j++)) ; do main_string="$main_string\n##ju5t_4_1in3##"; done	#This treatment is just to put an id on where there will be just an empty line at the final of the program!
+					for (( j=0; j < $last_lines; j++)) ; do main_string="$main_string\n#@empty_cell&#"; done	#This treatment is just to put an id on where there will be just an empty line at the final of the program!
 					main_string="$main_string\n$treat_string"	#The main String is concatenated with the new transformed inicial string, recursivelly, until all the iterations asked be passed;
 				done
 
@@ -133,12 +139,17 @@ function main(){
 
 	fi
 
+<<<<<<< HEAD
 	{ echo -n -e "$main_string"; } >"${1%.txt}_pos-processed.txt"
 	sed -i 's/^##ju5t_4_1in3##//g' "${1%.txt}_pos-processed.txt"
+=======
+	{ echo -n -e "$main_string"; } >"${1%.txt}_pos-processed.txt"	
+	sed -i 's/^#@empty_cell&#//g' "${1%.txt}_pos-processed.txt"
+>>>>>>> 148e0b4b1a7b1f8763692f7ea41aef1ac174e6e9
 	
 	unset main_string; unset treat_string; unset last_lines;
 
-	echo -n -e "\nEncerrando script normalmente. Trabalho concluído!\n\n"
+	echo -n -e "\nClosing Script normally. Job is finished!\n\n"
 
 exit 0;}
 
