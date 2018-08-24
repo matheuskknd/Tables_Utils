@@ -70,9 +70,15 @@ function main(){
 
 	main_string=$(cat "$1");		#Original file copy string...
 	treat_string="$main_string";	#String to be treated and after applied to the main String;
+
+	echo -n -e "$main_string\n" >'.BASH_TEMP_FILE.txt'
+	last_lines=$(echo "$(wc -l <""$1"")-$(wc -l <.BASH_TEMP_FILE.txt)"|bc);
+	rm '.BASH_TEMP_FILE.txt'
+
+#To print a specific line use: sed -n "$var"p "file_name" ou sed -n "$var1","$var2"p "file_name" para imprimir as linhas de "$var1" a "$var2"
 	
-	last_lines=$(wc -c <"$1");								#Original number of bytes on the file...
-	last_lines=$(echo "$last_lines-${#main_string}-1"|bc);	#Diference found is the last lines missing! (-1 for some reason I don't know...)
+#	last_lines=$(wc -l "$1"|cut -d' ' -f1);					#Original number of bytes on the file...
+#	last_lines=$(echo "$last_lines-${#main_string}-1"|bc);	#Diference found is the last lines missing! (-1 for some reason I don't know...)
 
 	if [ "$2" == '-AP' ] ; then
 
@@ -127,7 +133,7 @@ function main(){
 
 	fi
 
-	{ echo -n -e "$main_string"; } >"${1%.txt}_pos-processed.txt"	
+	{ echo -n -e "$main_string"; } >"${1%.txt}_pos-processed.txt"
 	sed -i 's/^##ju5t_4_1in3##//g' "${1%.txt}_pos-processed.txt"
 	
 	unset main_string; unset treat_string; unset last_lines;
