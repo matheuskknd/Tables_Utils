@@ -73,6 +73,7 @@ function main(){
 	
 	last_lines=$(wc -c <"$1");								#Original number of bytes on the file...
 	last_lines=$(echo "$last_lines-${#main_string}-1"|bc);	#Diference found is the last lines missing! (-1 for some reason I don't know...)
+#Im making this line just to make conflic with the last real commit that is not pushed yet! Just for learning...
 
 	if [ "$2" == '-AP' ] ; then
 
@@ -105,7 +106,7 @@ function main(){
 						fi
 					done
 
-					for (( j=0; j < $last_lines; j++)) ; do main_string="$main_string\n##ju5t_4_1in3##"; done	#This treatment is just to put an id on where there will be just an empty line at the final of the program!
+					for (( j=0; j < $last_lines; j++)) ; do main_string="$main_string\n#@empty_cell&#"; done	#This treatment is just to put an id on where there will be just an empty line at the final of the program!
 					main_string="$main_string\n$treat_string"	#The main String is concatenated with the new transformed inicial string, recursivelly, until all the iterations asked be passed;
 				done
 
@@ -128,7 +129,7 @@ function main(){
 	fi
 
 	{ echo -n -e "$main_string"; } >"${1%.txt}_pos-processed.txt"	
-	sed -i 's/^##ju5t_4_1in3##//g' "${1%.txt}_pos-processed.txt"
+	sed -i 's/^#@empty_cell&#//g' "${1%.txt}_pos-processed.txt"
 	
 	unset main_string; unset treat_string; unset last_lines;
 
