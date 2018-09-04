@@ -2,8 +2,12 @@
 
 ###########################################
 ## Use this script to align your cells on #
-## Calc, Exel ou any other table program. #
+## Calc, Exel or other compatible program #
 ###########################################
+
+#These tables have a limit of 1.048.576 lines for both;
+#And a limit of AMJ columns to Calc;
+#And a limit of XFD columns to Exel;
 
 
 function usage(){
@@ -37,7 +41,7 @@ function param_checker(){
 
 	if [ "$3" != "-L" ] && [ "$3" != "-C" ] ; then usage "$6"; fi
 
-	if [[ ! "$4" =~ ^-?[0-9]+$  ]] ; then
+	if [[ ! "$4" =~ ^-?[0-9]{1,7}$  ]] ; then
 
 		echo -e "\nAttention: '$4' is not a valid number!" >&2;
 		usage "$6";
@@ -64,18 +68,97 @@ function param_checker(){
 return 0;}
 
 
+function is_a_location(){
+
+	if [[ "$1" =~ ^[A-Z]{1,3}[0-9]{1,7}$ ]] ; then return 0; fi
+
+return -1;}
+
+
+function getNbLines(){
+
+	if [ "$2" == true ] ; then
+
+		lastLines_AUX=$(cat "$1");
+		echo "$lastLines_AUX" >'.BASH_TEMP_FILE.txt'
+
+		nbLines=$(wc -l <"$1");
+		lastLines=$(echo "$nbLines-$(wc -l <.BASH_TEMP_FILE.txt)"|bc);
+
+		rm '.BASH_TEMP_FILE.txt'
+		unset lastLines_AUX;
+
+	else
+		unset nbLines; unset lastLines;
+
+	fi
+
+return 0;}
+
+
+function genTable(){
+
+#To print a specific line use: sed -n "$var"p "file_name" ou sed -n "$var1","$var2"p "file_name" para imprimir as linhas de "$var1" a "$var2"
+
+	if [ "$3" == true ] ; then
+
+		for(( line=1, i=0; line <= $2; line++, i++)) ; do
+
+			curLine=$(sed -n "$line"p "$1");
+
+			if [ "$curLine" != "" ] ; then #[@empty_cell&>#
+
+				for(( j=0; j < ${#curLine}; j++)) ; do
+
+					if [[ ${treat_string:$j:1} == [A-Z] ]] ; then
+
+						count1=0;
+						count2=0;
+						k=$j;
+
+						while [[ ${treat_string:$k:1} == [A-Z] ]] ; do k=$(echo "$k+1"|bc); done	#Counts how many chars composes the number sinse index $j...
+
+						l=$(echo "$k-$j"|bc);	#length (l) of the analised number!
+
+						number="${treat_string:$j:$l}";	#Gets the number like a substring...
+						number=$(echo "$number+$4"|bc);	#Applies the AP in that number...
+
+						treat_string="${treat_string:0:$j}""$number""${treat_string:$k}";	#Puts it back in the same relative place (it may change the total length...)
+
+						j=$(echo "$j+${#number}"|bc);	#To avoid "re-analizing" the same number, j jump to its final position+1;
+
+						unset k; unset l; unset count1; unset count2; unset number;
+					fi
+
+				done
+
+			else
+
+
+			fi
+
+		done
+
+		unset line; unset curLine;
+
+	else
+
+
+	fi
+
+return 0;}
+
+
 function main(){
 
 	echo -n -e "\n\nStarting to process the text...\n"
 
+	getNbLines "$1" true;			#Getting the total lines in the file, and the total blank lines at the file's final.
+
+	genTable "$1" "$nbLines" true;
+
 	main_string=$(cat "$1");		#Original file copy string...
 	treat_string="$main_string";	#String to be treated and after applied to the main String;
-
-	echo -n -e "$main_string\n" >'.BASH_TEMP_FILE.txt'
-	last_lines=$(echo "$(wc -l <""$1"")-$(wc -l <.BASH_TEMP_FILE.txt)"|bc);
-	rm '.BASH_TEMP_FILE.txt'
-
-#To print a specific line use: sed -n "$var"p "file_name" ou sed -n "$var1","$var2"p "file_name" para imprimir as linhas de "$var1" a "$var2"
 
 	if [ "$2" == '-AP' ] ; then
 
@@ -108,7 +191,7 @@ function main(){
 						fi
 					done
 
-					for (( j=0; j < $last_lines; j++)) ; do main_string="$main_string\n#@empty_cell&#"; done	#This treatment is just to put an id on where there will be just an empty line at the final of the program!
+					for (( j=0; j < $lastLines; j++)) ; do main_string="$main_string\n#@empty_cell&#"; done	#This treatment is just to put an id on where there will be just an empty line at the final of the program!
 					main_string="$main_string\n$treat_string"	#The main String is concatenated with the new transformed inicial string, recursivelly, until all the iterations asked be passed;
 				done
 
@@ -133,11 +216,13 @@ function main(){
 	{ echo -n -e "$main_string"; } >"${1%.txt}_pos-processed.txt"	
 	sed -i 's/^#@empty_cell&#//g' "${1%.txt}_pos-processed.txt"
 	
-	unset main_string; unset treat_string; unset last_lines;
+	unset main_string; unset treat_string; unset lastLines;
+	getNbLines "" false;
 
 	echo -n -e "\nClosing Script normally. Job is finished!\n\n"
 
 exit 0;}
+
 
 if [ "$#" == '1' ] && ( [ "$1" == "help" ] || [ "$1" == "--help" ] || [ "$1" == "-h" ] ) ; then
 
