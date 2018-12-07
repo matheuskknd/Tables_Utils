@@ -9,6 +9,8 @@
 #And a limit of AMJ columns to Calc;
 #And a limit of XFD columns to Exel;
 
+#Global variables:
+	treat_string=''	#Well-defined on main!
 
 function usage(){
 
@@ -75,87 +77,57 @@ function is_a_location(){
 return -1;}
 
 
-function getNbLines(){
-
-	if [ "$2" == true ] ; then
-
-		lastLines_AUX=$(cat "$1");
-		echo "$lastLines_AUX" >'.BASH_TEMP_FILE.txt'
-
-		nbLines=$(wc -l <"$1");
-		lastLines=$(echo "$nbLines-$(wc -l <.BASH_TEMP_FILE.txt)"|bc);
-
-		rm '.BASH_TEMP_FILE.txt'
-		unset lastLines_AUX;
-
-	else
-		unset nbLines; unset lastLines;
-
-	fi
-
-return 0;}
-
-
 function genTable(){
+
+	local curLine; local line; local count1; local count2; local number; local j; local k; local l;
 
 #To print a specific line use: sed -n "$var"p "file_name" ou sed -n "$var1","$var2"p "file_name" para imprimir as linhas de "$var1" a "$var2"
 
-	if [ "$3" == true ] ; then
+	for(( line=1, i=0; line <= $2; line++, i++)) ; do
 
-		for(( line=1, i=0; line <= $2; line++, i++)) ; do
+		curLine=$(sed -n "$line"p "$1");
 
-			curLine=$(sed -n "$line"p "$1");
+		if [ "$curLine" != '' ] ; then #[@empty_cell&>#
 
-			if [ "$curLine" != "" ] ; then #[@empty_cell&>#
+			for(( j=0; j < ${#curLine}; j++)) ; do
 
-				for(( j=0; j < ${#curLine}; j++)) ; do
+				if [[ ${treat_string:$j:1} == [A-Z] ]] ; then
 
-					if [[ ${treat_string:$j:1} == [A-Z] ]] ; then
+					count1=0;
+					count2=0;
+					k=$j;
 
-						count1=0;
-						count2=0;
-						k=$j;
+					while [[ ${treat_string:$k:1} == [A-Z] ]] ; do k=$((++k)); done	#Counts how many chars composes the number sinse index $j...
 
-						while [[ ${treat_string:$k:1} == [A-Z] ]] ; do k=$(echo "$k+1"|bc); done	#Counts how many chars composes the number sinse index $j...
+					l=$((k-j));	#length (l) of the analised number!
 
-						l=$(echo "$k-$j"|bc);	#length (l) of the analised number!
+					number="${treat_string:$j:$l}";	#Gets the number like a substring...
+					number=$(echo "$number+$4"|bc);	#Applies the AP in that number...
 
-						number="${treat_string:$j:$l}";	#Gets the number like a substring...
-						number=$(echo "$number+$4"|bc);	#Applies the AP in that number...
+					treat_string="${treat_string:0:$j}""$number""${treat_string:$k}";	#Puts it back in the same relative place (it may change the total length...)
+					j=$((j+${#number}));			#To avoid "re-analizing" the same number, j jump to its final position+1;
+				fi
 
-						treat_string="${treat_string:0:$j}""$number""${treat_string:$k}";	#Puts it back in the same relative place (it may change the total length...)
-
-						j=$(echo "$j+${#number}"|bc);	#To avoid "re-analizing" the same number, j jump to its final position+1;
-
-						unset k; unset l; unset count1; unset count2; unset number;
-					fi
-
-				done
-
-			else
-
-
-			fi
-
-		done
-
-		unset line; unset curLine;
-
-	else
-
-
-	fi
+			done
+		fi
+	done
 
 return 0;}
 
 
 function main(){
 
-	echo -n -e "\n\nStarting to process the text...\n"
+	local main_string; local treat_string; local lastLines;
 
-	getNbLines "$1" true;			#Getting the total lines in the file, and the total blank lines at the file's final.
+	echo -e "\nStarting to process the text:\n"
 
-	genTable "$1" "$nbLines" true;
+	nbLines=$(cat "$1");
+	nbLines=$(echo "$nbLines" | wc -l);
+
+	lastLines=$(wc -l <"$1");
+	lastLines=$((lastLines-nbLines));	#Getting the total lines in the file, and the total blank lines at the file's final.
+
+	genTable "$1" "$nbLines" '' "$4";
 
 	main_string=$(cat "$1");		#Original file copy string...
 	treat_string="$main_string";	#String to be treated and after applied to the main String;
@@ -164,7 +136,7 @@ function main(){
 
 		if [ "$3" == '-L' ] ; then
 
-			if [ "$4" -gt '0' ] ; then
+			if (( $4 > 0 )) ; then
 
 				for (( i=1; i < $5; i++)) ; do	#Makes all the iterations, except one (the initial is equal...);
 
@@ -176,18 +148,16 @@ function main(){
 
 							k=$j;
 
-							while [[ "${treat_string:$k:1}" =~ ^[0-9]+$ ]] ; do k=$(echo "$k+1"|bc); done	#Counts how many chars composes the number sinse index $j...
+							while [[ "${treat_string:$k:1}" =~ ^[0-9]+$ ]] ; do k=$((++k)); done	#Counts how many chars composes the number sinse index $j...
 
-							l=$(echo "$k-$j"|bc);	#length (l) of the analised number!
+							l=$((k-j));		#length (l) of the analised number!
 
 							number="${treat_string:$j:$l}";	#Gets the number like a substring...
-							number=$(echo "$number+$4"|bc);	#Applies the AP in that number...
+							number=$((number+$4));			#Applies the AP in that number...
 
 							treat_string="${treat_string:0:$j}""$number""${treat_string:$k}";	#Puts it back in the same relative place (it may change the total length...)
 
-							j=$(echo "$j+${#number}"|bc);	#To avoid "re-analizing" the same number, j jump to its final position+1;
-
-							unset k; unset l; unset number;
+							j=$((j+${#number}));	#To avoid "re-analizing" the same number, j jump to its final position+1;
 						fi
 					done
 
@@ -213,13 +183,9 @@ function main(){
 
 	fi
 
-	{ echo -n -e "$main_string"; } >"${1%.txt}_pos-processed.txt"	
-	sed -i 's/^#@empty_cell&#//g' "${1%.txt}_pos-processed.txt"
-	
-	unset main_string; unset treat_string; unset lastLines;
-	getNbLines "" false;
+	{ echo -n -e "$main_string" | sed 's/^#@empty_cell&#//g';  } >"${1%.txt}_pos_processed.txt"
 
-	echo -n -e "\nClosing Script normally. Job is finished!\n\n"
+	echo -e "\nClosing Script normally. Job is finished!\n\n"
 
 exit 0;}
 
