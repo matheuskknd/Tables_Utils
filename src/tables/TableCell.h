@@ -17,6 +17,8 @@ private: /* Attributes */
 	natural NbNextEmpty;	//Number of empty cells until the first with content.
 	natural NbPartes;		//Total number of parts.
 
+private: /* Methods */
+
 	inline static constexpr natural times( const natural x, const int y) noexcept{ return y < 0 ? x/-y : x*y;}
 	inline static constexpr natural plus( const natural x, const int y) noexcept{ return x + y;}
 

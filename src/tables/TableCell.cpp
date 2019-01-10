@@ -278,16 +278,19 @@ natural TableCell::process_rule( AeternalBuffer& text, AeternalBuffer& auxBuf, c
 	const natural vigor = strtoul(str+i,&aux,10);
 	i += aux - (str+i);
 
+	if( pgt == GP && step == 0 )
+		fail_report("There's a geometric progression with '0' as step on some rule, wich generates invalid domain.",ERROR_CODE::_DOMAIN);
+
 	Rule* INIT;
 
 	if( FIRST == nullptr ){
 
-		INIT = new Rule(step,frec,since,until,vigor,pgt,apl);
+		INIT = new Rule(step,frec,since,until,vigor == 0 ? 0 : vigor+1,pgt,apl);
 		FIRST = ( LAST = INIT );
 
 	}else{
 
-		LAST->setNext( INIT = new Rule(step,frec,since,until,vigor,pgt,apl) );
+		LAST->setNext( INIT = new Rule(step,frec,since,until,vigor == 0 ? 0 : vigor+1,pgt,apl) );
 		LAST = LAST->getNext();
 	}
 

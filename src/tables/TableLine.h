@@ -17,6 +17,10 @@ private: /* Attributes */
 	natural NbCells;
 	natural NbEmpty;
 
+private: /* Methods */
+
+	inline static natural pow( const natural base, const natural exp) noexcept;
+
 public: /* Methods */
 
 	inline constexpr TableLine(void) noexcept : FIRST{nullptr}, LAST{nullptr}, NbCells{0}, NbEmpty{0} {}

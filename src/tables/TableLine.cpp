@@ -6,7 +6,7 @@ using std::bad_alloc;
 #include<iostream>
 using std::cout;
 
-inline natural pow( const natural base, const natural exp){
+inline natural TableLine::pow( const natural base, const natural exp) noexcept{
 
 	natural aux = 1;
 
