@@ -6,7 +6,7 @@ using std::bad_alloc;
 #include<iostream>
 using std::cout;
 
-TableCell::TableCell( const char * const str) noexcept{
+TableCell::TableCell( const char * const str) noexcept try{
 
 	FIRST = nullptr;
 	next = nullptr;
@@ -82,70 +82,63 @@ TableCell::TableCell( const char * const str) noexcept{
 				aux = text.compileAndRelease();
 				done = true;
 
-				try{
+				if( size <= 6 ){	//The aux chars enter inside the new coordenate, otherwise it becomes another text part apart.
 
-					if( size <= 6 ){	//The aux chars enter inside the new coordenate, otherwise it becomes another text part apart.
+					char ttt[6] = {'\0','\0','\0','\0','\0','\0'};
 
-						char ttt[6] = {'\0','\0','\0','\0','\0','\0'};
+					for( slimNatural i = 0; aux[i] != '\0'; ++i)
+						ttt[i] = aux[i];
 
-						for( slimNatural i = 0; aux[i] != '\0'; ++i)
-							ttt[i] = aux[i];
+					if( FIRST == nullptr ){	//First part...
 
-						if( FIRST == nullptr ){	//First part...
-
-							LAST = new Coordenate(column,constC,line,constL,char6(ttt[0],ttt[1],ttt[2],ttt[3],ttt[4],ttt[5]));
-							FIRST = LAST;
-
-						}else{
-
-							LAST->setNext( new Coordenate(column,constC,line,constL,char6(ttt[0],ttt[1],ttt[2],ttt[3],ttt[4],ttt[5])) );
-							LAST = LAST->getNext();
-						}
-
-						delete[] aux;
-
-					}else if( size <= 8 ){
-
-						char ttt[8] = {'\0','\0','\0','\0','\0','\0','\0','\0'};
-
-						for( slimNatural i = 0; aux[i] != '\0'; ++i)
-							ttt[i] = aux[i];
-
-						if( FIRST == nullptr ){	//First part...
-
-							LAST = new SmallText(ttt[0],ttt[1],ttt[2],ttt[3],ttt[4],ttt[5],ttt[6],ttt[7]);
-							FIRST = LAST;
-
-						}else{
-
-							LAST->setNext( new SmallText(ttt[0],ttt[1],ttt[2],ttt[3],ttt[4],ttt[5],ttt[6],ttt[7]) );
-							LAST = LAST->getNext();
-						}
-
-						LAST->setNext( new Coordenate(column,constC,line,constL) );
-						LAST = LAST->getNext();
-						delete[] aux;
+						LAST = new Coordenate(column,constC,line,constL,char6(ttt[0],ttt[1],ttt[2],ttt[3],ttt[4],ttt[5]));
+						FIRST = LAST;
 
 					}else{
 
-						if( FIRST == nullptr ){	//First part...
-
-							LAST = new TextPart(aux);
-							FIRST = LAST;
-
-						}else{
-
-							LAST->setNext( new TextPart(aux) );
-							LAST = LAST->getNext();
-						}
-
-						LAST->setNext( new Coordenate(column,constC,line,constL) );
+						LAST->setNext( new Coordenate(column,constC,line,constL,char6(ttt[0],ttt[1],ttt[2],ttt[3],ttt[4],ttt[5])) );
 						LAST = LAST->getNext();
 					}
 
-				}catch(bad_alloc){
+					delete[] aux;
 
-					fail_report("TableCell::TableCell(const char*)",ERROR_CODE::BAD_ALLOC);
+				}else if( size <= 8 ){
+
+					char ttt[8] = {'\0','\0','\0','\0','\0','\0','\0','\0'};
+
+					for( slimNatural i = 0; aux[i] != '\0'; ++i)
+						ttt[i] = aux[i];
+
+					if( FIRST == nullptr ){	//First part...
+
+						LAST = new SmallText(ttt[0],ttt[1],ttt[2],ttt[3],ttt[4],ttt[5],ttt[6],ttt[7]);
+						FIRST = LAST;
+
+					}else{
+
+						LAST->setNext( new SmallText(ttt[0],ttt[1],ttt[2],ttt[3],ttt[4],ttt[5],ttt[6],ttt[7]) );
+						LAST = LAST->getNext();
+					}
+
+					LAST->setNext( new Coordenate(column,constC,line,constL) );
+					LAST = LAST->getNext();
+					delete[] aux;
+
+				}else{
+
+					if( FIRST == nullptr ){	//First part...
+
+						LAST = new TextPart(aux);
+						FIRST = LAST;
+
+					}else{
+
+						LAST->setNext( new TextPart(aux) );
+						LAST = LAST->getNext();
+					}
+
+					LAST->setNext( new Coordenate(column,constC,line,constL) );
+					LAST = LAST->getNext();
 				}
 			}
 
@@ -153,23 +146,12 @@ TableCell::TableCell( const char * const str) noexcept{
 
 		if( done )
 			continue;
-		else
-			j = i;
 
-		do{
+		if( str[i] == '-' && str[i+1] == '&' && str[i+2] == '#' ){	//If it's a rule, skip it.
 
-			if( str[j] != '-' || str[j+1] != '&' || str[j+2] != '#' )	//If it's not a rule, skip it.
-				break;
-			else
-				j += 3;
-
-			i += 3 + TableCell::process_rule(text,auxBuf,str+j,FIRST,LAST);
-			done = true;
-
-		}while( false );
-
-		if( done )
+			i += 3 + TableCell::process_rule(text,auxBuf,str+i+3,FIRST,LAST);
 			continue;
+		}
 
 		text << str[i];
 		++i;
@@ -180,49 +162,46 @@ TableCell::TableCell( const char * const str) noexcept{
 		const natural size = text.size();
 		const char* aux = text.compileAndRelease();
 
-		try{
+		if( size <= 8 ){
 
-			if( size <= 8 ){
+			char ttt[8] = {'\0','\0','\0','\0','\0','\0','\0','\0'};
 
-				char ttt[8] = {'\0','\0','\0','\0','\0','\0','\0','\0'};
+			for( slimNatural i = 0; aux[i] != '\0'; ++i)
+				ttt[i] = aux[i];
 
-				for( slimNatural i = 0; aux[i] != '\0'; ++i)
-					ttt[i] = aux[i];
+			if( FIRST == nullptr ){	//First part...
 
-				if( FIRST == nullptr ){	//First part...
-
-					LAST = new SmallText(ttt[0],ttt[1],ttt[2],ttt[3],ttt[4],ttt[5],ttt[6],ttt[7]);
-					FIRST = LAST;
-
-				}else{
-
-					LAST->setNext( new SmallText(ttt[0],ttt[1],ttt[2],ttt[3],ttt[4],ttt[5],ttt[6],ttt[7]) );
-					LAST = LAST->getNext();
-				}
-
-				delete[] aux;
+				LAST = new SmallText(ttt[0],ttt[1],ttt[2],ttt[3],ttt[4],ttt[5],ttt[6],ttt[7]);
+				FIRST = LAST;
 
 			}else{
 
-				if( FIRST == nullptr ){	//First part...
-
-					LAST = new TextPart(aux);
-					FIRST = LAST;
-
-				}else{
-
-					LAST->setNext( new TextPart(aux) );
-					LAST = LAST->getNext();
-				}
+				LAST->setNext( new SmallText(ttt[0],ttt[1],ttt[2],ttt[3],ttt[4],ttt[5],ttt[6],ttt[7]) );
+				LAST = LAST->getNext();
 			}
 
-		}catch(bad_alloc){
+			delete[] aux;
 
-			fail_report("TableCell::TableCell(const char*)",ERROR_CODE::BAD_ALLOC);
+		}else{
+
+			if( FIRST == nullptr ){	//First part...
+
+				LAST = new TextPart(aux);
+				FIRST = LAST;
+
+			}else{
+
+				LAST->setNext( new TextPart(aux) );
+				LAST = LAST->getNext();
+			}
 		}
 	}
 
 	delete[] str;
+
+}catch(bad_alloc){
+
+	fail_report("TableCell::TableCell(const char*)",ERROR_CODE::BAD_ALLOC);
 }
 
 
@@ -434,24 +413,13 @@ natural TableCell::process_rule( AeternalBuffer& text, AeternalBuffer& auxBuf, c
 
 		if( done )
 			continue;
-		else
-			j = i;
 
-		do{
+		if( str[i] == '-' && str[i+1] == '&' && str[i+2] == '#' ){	//If it's a rule, skip it.
 
-			if( str[j] != '-' || str[j+1] != '&' || str[j+2] != '#' )	//If it's not a rule, skip it.
-				break;
-			else
-				j += 3;
-
-			i += 3 + TableCell::process_rule(text,auxBuf,str+j,FIRST,LAST);
-			done = true;
-
-		}while( false );
-
-		if( done )
+			i += 3 + TableCell::process_rule(text,auxBuf,str+i+3,INIT->getRuling(),ILAST);
 			continue;
-		
+		}
+
 		text << str[i];
 		++i;
 	}

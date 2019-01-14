@@ -46,7 +46,7 @@ public: /* Methods */
 	virtual void print( const bool keepMarkUp) const noexcept override;
 
 	inline void setRuling( const CellPart* const cp) noexcept{ F_ruled = cp;}
-	inline const CellPart* getRuling(void) noexcept{ return F_ruled;}
+	inline const CellPart*& getRuling(void) noexcept{ return F_ruled;}
 };
 
 #endif /* RULE_H */
