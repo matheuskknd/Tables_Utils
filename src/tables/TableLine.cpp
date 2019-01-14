@@ -118,6 +118,8 @@ void TableLine::print( const bool keepMarkUp) const noexcept{
 
 		}while( true );
 	}
+
+	cout << '\n';
 }
 
 

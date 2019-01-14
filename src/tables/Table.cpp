@@ -1,13 +1,9 @@
 #include"Table.h"
 
 #include"../buffers/AeternalBuffer.h"
-#include<cstdio>
 
 #include<new>
 using std::bad_alloc;
-
-#include<iostream>
-using std::cout;
 
 Table::Table( const char * const fName) noexcept try{
 
@@ -123,11 +119,6 @@ Table* Table::create_table( const progression_t pt, const apply_on where, const 
 
 void Table::print( const bool keepMarkUp) const noexcept{
 
-	line[0].print(keepMarkUp);
-
-	for( natural i = 1; i < NbLines; ++i){
-
-		cout << '\n';
+	for( natural i = 0; i != NbLines; ++i)
 		line[i].print(keepMarkUp);
-	}	
 }

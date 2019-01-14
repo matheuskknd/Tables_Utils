@@ -3,9 +3,6 @@
 #include<new>
 using std::bad_alloc;
 
-#include<cstdlib>
-using std::strtoul;
-
 #include<iostream>
 using std::cout;
 
@@ -471,9 +468,7 @@ TableCell* TableCell::getCellApplying( const progression_t pt, const apply_on wh
 		else
 			temp->FIRST = ( LAST = aux->applyInLines(NbIter,step,pt == progression_t::AP ? plus : times) );
 
-		aux = aux->getNext();
-
-		while( aux != nullptr ){
+		while( aux = aux->getNext() ){
 
 			if( where == apply_on::COLUMN )
 				LAST->setNext( aux->applyInColumns(NbIter,step,pt == progression_t::AP ? plus : times) );
@@ -481,7 +476,6 @@ TableCell* TableCell::getCellApplying( const progression_t pt, const apply_on wh
 				LAST->setNext( aux->applyInLines(NbIter,step,pt == progression_t::AP ? plus : times) );
 
 			LAST = LAST->getNext();
-			aux = aux->getNext();
 		}
 	}
 
