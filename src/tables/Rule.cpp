@@ -19,7 +19,7 @@ return aux;}
 CellPart* Rule::applyInColumns( const natural iter, const int step, const operation oprtn) const noexcept{
 
 	if( vigor == 1 )	//If there's no more vigor
-		return this->ruled->applyInColumns(iter,step,oprtn);
+		return this->F_ruled->applyInColumns(iter,step,oprtn);
 
 	Rule* temp;
 
@@ -32,50 +32,38 @@ CellPart* Rule::applyInColumns( const natural iter, const int step, const operat
 		fail_report("CellPart* Rule::applyInColumns(natural,int,operation) const",ERROR_CODE::BAD_ALLOC);
 	}
 
-	const CellPart * aux1 = this->ruled;	//aux2 browses the new Rule, aux1 browses this Rule
+	const CellPart * aux1 = this->F_ruled;	//aux2 browses the new Rule, aux1 browses this Rule
 	CellPart * aux2;
 
 	if( aux1 != nullptr ){
 
-//		if( dynamic_cast<const Rule*>(aux1) != nullptr ){		//If aux is an instance of Rule
+		if( iter >= since && ( until == 0 || iter <= until ) ){	//Inside the vigor zone...
 
-//			temp->ruled = ( aux2 = aux1->applyInColumns(iter,step,oprtn) );	//The first becomes the whatever the other rule says to be right.
+			if( this->aplo == apply_on::LINE )
+				temp->F_ruled = ( aux2 = aux1->applyInLines(iter,this->pgt == GP ? pow(this->step,iter/frequency) : this->step*static_cast<natural>(iter/frequency),this->pgt == GP ? times : plus) );
+			else
+				temp->F_ruled = ( aux2 = aux1->applyInColumns(iter,this->pgt == GP ? pow(this->step,iter/frequency) : this->step*static_cast<natural>(iter/frequency),this->pgt == GP ? times : plus) );
 
-//		}else{
+		}else
+			temp->F_ruled = ( aux2 = aux1->applyInColumns(iter,step,none) );	//It just gets a copy of the previous version
+
+		while( ( aux1 = aux1->getNext() ) != this->getNext() ){
 
 			if( iter >= since && ( until == 0 || iter <= until ) ){	//Inside the vigor zone...
 
 				if( this->aplo == apply_on::LINE )
-					temp->ruled = ( aux2 = aux1->applyInLines(iter,this->pgt == GP ? pow(this->step,iter/frequency) : this->step*static_cast<natural>(iter/frequency),this->pgt == GP ? times : plus) );
+					aux2->setNext( aux1->applyInLines(iter,this->pgt == GP ? pow(this->step,iter/frequency) : this->step*static_cast<natural>(iter/frequency),this->pgt == GP ? times : plus) );
 				else
-					temp->ruled = ( aux2 = aux1->applyInColumns(iter,this->pgt == GP ? pow(this->step,iter/frequency) : this->step*static_cast<natural>(iter/frequency),this->pgt == GP ? times : plus) );
+					aux2->setNext( aux1->applyInColumns(iter,this->pgt == GP ? pow(this->step,iter/frequency) : this->step*static_cast<natural>(iter/frequency),this->pgt == GP ? times : plus) );
 
 			}else
-				temp->ruled = ( aux2 = aux1->applyInColumns(iter,step,none) );	//It just gets a copy of the previous version
-//		}
-
-		while( aux1 = aux1->getNext() ){
-
-//			if( dynamic_cast<const Rule*>(aux1) != nullptr ){		//If aux is an instance of Rule
-
-//				aux2->setNext( aux1->applyInColumns(iter,step,oprtn) );	//The first becomes the whatever the other rule says to be right.
-
-//			}else{
-
-				if( iter >= since && ( until == 0 || iter <= until ) ){	//Inside the vigor zone...
-
-					if( this->aplo == apply_on::LINE )
-						aux2->setNext( aux1->applyInLines(iter,this->pgt == GP ? pow(this->step,iter/frequency) : this->step*static_cast<natural>(iter/frequency),this->pgt == GP ? times : plus) );
-					else
-						aux2->setNext( aux1->applyInColumns(iter,this->pgt == GP ? pow(this->step,iter/frequency) : this->step*static_cast<natural>(iter/frequency),this->pgt == GP ? times : plus) );
-
-				}else
-					aux2->setNext( aux1->applyInColumns(iter,step,none) );	//It just gets a copy of the previous version
-//			}
+				aux2->setNext( aux1->applyInColumns(iter,step,none) );	//It just gets a copy of the previous version
 
 			aux2 = aux2->getNext();
 		}
 	}
+
+	temp->setLast(aux2);
 
 return temp;}
 
@@ -83,7 +71,7 @@ return temp;}
 CellPart* Rule::applyInLines( const natural iter, const int step, const operation oprtn) const noexcept{
 
 	if( vigor == 1 )	//If there's no more vigor
-		return this->ruled->applyInLines(iter,step,oprtn);
+		return this->F_ruled->applyInLines(iter,step,oprtn);
 
 	Rule* temp;
 
@@ -96,35 +84,22 @@ CellPart* Rule::applyInLines( const natural iter, const int step, const operatio
 		fail_report("CellPart* Rule::applyInColumns(natural,int,operation) const",ERROR_CODE::BAD_ALLOC);
 	}
 
-	const CellPart * aux1 = this->ruled;	//aux2 browses the new Rule, aux1 browses this Rule
+	const CellPart * aux1 = this->F_ruled;	//aux2 browses the new Rule, aux1 browses this Rule
 	CellPart * aux2;
 
 	if( aux1 != nullptr ){
 
-//		if( dynamic_cast<const Rule*>(aux1) != nullptr ){		//If aux is an instance of Rule
+		if( iter >= since && ( until == 0 || iter <= until ) ){	//Inside the vigor zone...
 
-//			temp->ruled = ( aux2 = aux1->applyInLines(iter,step,oprtn) );	//The first becomes the whatever the other rule says to be right.
+			if( this->aplo == apply_on::LINE )
+				temp->F_ruled = ( aux2 = aux1->applyInLines(iter,this->pgt == GP ? pow(this->step,iter/frequency) : this->step*static_cast<natural>(iter/frequency),this->pgt == GP ? times : plus) );
+			else
+				temp->F_ruled = ( aux2 = aux1->applyInColumns(iter,this->pgt == GP ? pow(this->step,iter/frequency) : this->step*static_cast<natural>(iter/frequency),this->pgt == GP ? times : plus) );
 
-//		}else{
+		}else
+			temp->F_ruled = ( aux2 = aux1->applyInLines(iter,step,none) );	//It just gets a copy of the previous version
 
-			if( iter >= since && ( until == 0 || iter <= until ) ){	//Inside the vigor zone...
-
-				if( this->aplo == apply_on::LINE )
-					temp->ruled = ( aux2 = aux1->applyInLines(iter,this->pgt == GP ? pow(this->step,iter/frequency) : this->step*static_cast<natural>(iter/frequency),this->pgt == GP ? times : plus) );
-				else
-					temp->ruled = ( aux2 = aux1->applyInColumns(iter,this->pgt == GP ? pow(this->step,iter/frequency) : this->step*static_cast<natural>(iter/frequency),this->pgt == GP ? times : plus) );
-
-			}else
-				temp->ruled = ( aux2 = aux1->applyInLines(iter,step,none) );	//It just gets a copy of the previous version
-//		}
-
-		while( aux1 = aux1->getNext() ){
-
-//			if( dynamic_cast<const Rule*>(aux1) != nullptr ){		//If aux is an instance of Rule
-
-//				aux2->setNext( aux1->applyInLines(iter,step,oprtn) );	//The first becomes the whatever the other rule says to be right.
-
-//			}else{
+		while( ( aux1 = aux1->getNext() ) != this->getNext() ){
 
 				if( iter >= since && ( until == 0 || iter <= until ) ){	//Inside the vigor zone...
 
@@ -135,11 +110,12 @@ CellPart* Rule::applyInLines( const natural iter, const int step, const operatio
 
 				}else
 					aux2->setNext( aux1->applyInLines(iter,step,none) );	//It just gets a copy of the previous version
-//			}
 
 			aux2 = aux2->getNext();
 		}
 	}
+
+	temp->setLast(aux2);
 
 return temp;}
 
@@ -149,15 +125,15 @@ void Rule::print( const bool keepMarkUp) const noexcept{
 	if( keepMarkUp )
 		cout << "-&#" << ( pgt == AP ? 'A' : 'G' ) << '#' << ( aplo == LINE ? 'L' : 'C' ) << '#' << step << '#' << frequency << '#' << since << '#' << until << '#' << vigor << '#';
 
-	if( ruled != nullptr ){
+	if( F_ruled != nullptr ){
 
-		const CellPart* browser = ruled;
+		const CellPart* browser = F_ruled;
 
 		do{
 
 			browser->print(keepMarkUp);
 
-		}while( ( browser = browser->getNext() ) != next );
+		}while( ( browser = browser->getNext() ) != this->getNext() );
 	}
 
 	if( keepMarkUp )
@@ -167,9 +143,9 @@ void Rule::print( const bool keepMarkUp) const noexcept{
 
 Rule::~Rule() noexcept{
 
-	if( ruled != nullptr ){
+	if( F_ruled != nullptr ){
 
-		const CellPart * clean, * browser = ruled;
+		const CellPart * clean, * browser = F_ruled;
 
 		do{
 
@@ -178,6 +154,6 @@ Rule::~Rule() noexcept{
 
 			delete clean;
 
-		}while( browser != next );
+		}while( browser != this->getNext() );
 	}
 }

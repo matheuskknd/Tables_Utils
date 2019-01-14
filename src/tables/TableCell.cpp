@@ -158,10 +158,10 @@ TableCell::TableCell( const char * const str) noexcept{
 
 		do{
 
-			if( str[j] != '-' || str[j += 1 ] != '&' || str[j += 1] != '#' )	//If it's not a rule, skip it.
+			if( str[j] != '-' || str[j+1] != '&' || str[j+2] != '#' )	//If it's not a rule, skip it.
 				break;
 			else
-				++j;
+				j += 3;
 
 			i += 3 + TableCell::process_rule(text,auxBuf,str+j,FIRST,LAST);
 			done = true;
@@ -226,7 +226,7 @@ TableCell::TableCell( const char * const str) noexcept{
 }
 
 
-natural TableCell::process_rule( AeternalBuffer& text, AeternalBuffer& auxBuf, const char* const str, const CellPart *& FIRST, CellPart *& LAST) noexcept{
+natural TableCell::process_rule( AeternalBuffer& text, AeternalBuffer& auxBuf, const char* const str, const CellPart *& FIRST, CellPart *& LAST) noexcept try{
 
 	static constexpr const char* error = "syntatic error in rule entry '-&#'. It must be: -&#[A|G]#[L|C]#natural#natural#natural#natural#natural#[anything]#&-";
 
@@ -235,45 +235,50 @@ natural TableCell::process_rule( AeternalBuffer& text, AeternalBuffer& auxBuf, c
 
 	//Parses, Syntactic Checking and creation
 
-	if( str[i] != 'A' || str[i] != 'G' )
+	if( str[i] != 'A' && str[i] != 'G' )
 		fail_report(error,ERROR_CODE::RUNTIME);
 
 	const progression_t pgt = str[i] == 'A' ? AP : GP;
+	i += 2;
 
-	if( str[i += 1] != '#' || str[i += 1] != 'L' || str[i] != 'C' )
+	if( str[i-1] != '#' && str[i] != 'L' && str[i] != 'C' )
 		fail_report(error,ERROR_CODE::RUNTIME);
 
 	const apply_on apl = str[i] == 'L' ? LINE : COLUMN;
+	i += 2;
 
-	if( str[i += 1] != '#' || str[i += 1] < '0' || str[i] > '9' )
+	if( str[i-1] != '#' && ( str[i] < '0' || str[i] > '9' ) )
 		fail_report(error,ERROR_CODE::RUNTIME);
 
 	const natural step = strtoul(str+i,&aux,10);
-	i += aux - (str+i);
+	i += aux - (str+i) + 1;
 
-	if( str[i] != '#' || str[i += 1] < '0' || str[i] > '9' )
+	if( str[i-1] != '#' && ( str[i] < '0' || str[i] > '9' ) )
 		fail_report(error,ERROR_CODE::RUNTIME);
 
 	const natural frec = strtoul(str+i,&aux,10);
-	i += aux - (str+i);
+	i += aux - (str+i) + 1;
 
-	if( str[i] != '#' || str[i += 1] < '0' || str[i] > '9' )
+	if( str[i-1] != '#' && ( str[i] < '0' || str[i] > '9' ) )
 		fail_report(error,ERROR_CODE::RUNTIME);
 
 	const natural since = strtoul(str+i,&aux,10);
-	i += aux - (str+i);
+	i += aux - (str+i) + 1;
 
-	if( str[i] != '#' || str[i += 1] < '0' || str[i] > '9' )
+	if( str[i-1] != '#' && ( str[i] < '0' || str[i] > '9' ) )
 		fail_report(error,ERROR_CODE::RUNTIME);
 
 	const natural until = strtoul(str+i,&aux,10);
-	i += aux - (str+i);
+	i += aux - (str+i) + 1;
 
-	if( str[i] != '#' || str[i += 1] < '0' || str[i] > '9' )
+	if( str[i-1] != '#' && ( str[i] < '0' || str[i] > '9' ) )
 		fail_report(error,ERROR_CODE::RUNTIME);
 
 	const natural vigor = strtoul(str+i,&aux,10);
-	i += aux - (str+i);
+	i += aux - (str+i) + 1;
+
+	if( str[i-1] != '#' )		//Necessary to avoid some human errors...
+		fail_report(error,ERROR_CODE::RUNTIME);
 
 	if( pgt == GP && step == 0 )
 		fail_report("There's a geometric progression with '0' as step on some rule, wich generates invalid domain.",ERROR_CODE::_DOMAIN);
@@ -295,9 +300,16 @@ natural TableCell::process_rule( AeternalBuffer& text, AeternalBuffer& auxBuf, c
 
 	//Subcreation
 
+	static constexpr const char* unfinished = "syntatic error in rule entry '-&#'. No rule end '#&-' detected at the same cell it started.";
 	bool done;
 
-	while( str[i] != '\0' && !( str[i] == '#' && str[i+1] == '&' && str[i+2] == '-' ) ){
+	while( true ){
+
+		if( str[i] == '\0' || str[i+1] == '\0' || str[i+2] == '\0' )	//This possible syntatic error must be checked before every loop...
+			fail_report(unfinished,ERROR_CODE::RUNTIME);
+
+		if( str[i] == '#' && str[i+1] == '&' && str[i+2] == '-' )
+			break;
 
 		done = false;
 		j = i;
@@ -358,70 +370,63 @@ natural TableCell::process_rule( AeternalBuffer& text, AeternalBuffer& auxBuf, c
 				aux = text.compileAndRelease();
 				done = true;
 
-				try{
+				if( size <= 6 ){	//The aux chars enter inside the new coordenate, otherwise it becomes another text part apart.
 
-					if( size <= 6 ){	//The aux chars enter inside the new coordenate, otherwise it becomes another text part apart.
+					char ttt[6] = {'\0','\0','\0','\0','\0','\0'};
 
-						char ttt[6] = {'\0','\0','\0','\0','\0','\0'};
+					for( slimNatural i = 0; aux[i] != '\0'; ++i)
+						ttt[i] = aux[i];
 
-						for( slimNatural i = 0; aux[i] != '\0'; ++i)
-							ttt[i] = aux[i];
+					if( INIT->getRuling() == nullptr ){	//First part...
 
-						if( INIT->getRuling() == nullptr ){	//First part...
-
-							ILAST = new Coordenate(column,constC,line,constL,char6(ttt[0],ttt[1],ttt[2],ttt[3],ttt[4],ttt[5]));
-							INIT->getRuling() = ILAST;
-
-						}else{
-
-							ILAST->setNext( new Coordenate(column,constC,line,constL,char6(ttt[0],ttt[1],ttt[2],ttt[3],ttt[4],ttt[5])) );
-							ILAST = ILAST->getNext();
-						}
-
-						delete[] aux;
-
-					}else if( size <= 8 ){
-
-						char ttt[8] = {'\0','\0','\0','\0','\0','\0','\0','\0'};
-
-						for( slimNatural i = 0; aux[i] != '\0'; ++i)
-							ttt[i] = aux[i];
-
-						if( INIT->getRuling() == nullptr ){	//First part...
-
-							ILAST = new SmallText(ttt[0],ttt[1],ttt[2],ttt[3],ttt[4],ttt[5],ttt[6],ttt[7]);
-							INIT->getRuling() = ILAST;
-
-						}else{
-
-							ILAST->setNext( new SmallText(ttt[0],ttt[1],ttt[2],ttt[3],ttt[4],ttt[5],ttt[6],ttt[7]) );
-							ILAST = ILAST->getNext();
-						}
-
-						ILAST->setNext( new Coordenate(column,constC,line,constL) );
-						ILAST = ILAST->getNext();
-						delete[] aux;
+						ILAST = new Coordenate(column,constC,line,constL,char6(ttt[0],ttt[1],ttt[2],ttt[3],ttt[4],ttt[5]));
+						INIT->setRuling(ILAST);
 
 					}else{
 
-						if( INIT->getRuling() == nullptr ){	//First part...
-
-							ILAST = new TextPart(aux);
-							INIT->getRuling() = ILAST;
-
-						}else{
-
-							ILAST->setNext( new TextPart(aux) );
-							ILAST = ILAST->getNext();
-						}
-
-						ILAST->setNext( new Coordenate(column,constC,line,constL) );
+						ILAST->setNext( new Coordenate(column,constC,line,constL,char6(ttt[0],ttt[1],ttt[2],ttt[3],ttt[4],ttt[5])) );
 						ILAST = ILAST->getNext();
 					}
 
-				}catch(bad_alloc){
+					delete[] aux;
 
-					fail_report("natural TableCell::process_rule(AeternalBuffer&,AeternalBuffer&,const char*,const CellPart *&,CellPart *&)",ERROR_CODE::BAD_ALLOC);
+				}else if( size <= 8 ){
+
+					char ttt[8] = {'\0','\0','\0','\0','\0','\0','\0','\0'};
+
+					for( slimNatural i = 0; aux[i] != '\0'; ++i)
+						ttt[i] = aux[i];
+
+					if( INIT->getRuling() == nullptr ){	//First part...
+
+						ILAST = new SmallText(ttt[0],ttt[1],ttt[2],ttt[3],ttt[4],ttt[5],ttt[6],ttt[7]);
+						INIT->setRuling(ILAST);
+
+					}else{
+
+						ILAST->setNext( new SmallText(ttt[0],ttt[1],ttt[2],ttt[3],ttt[4],ttt[5],ttt[6],ttt[7]) );
+						ILAST = ILAST->getNext();
+					}
+
+					ILAST->setNext( new Coordenate(column,constC,line,constL) );
+					ILAST = ILAST->getNext();
+					delete[] aux;
+
+				}else{
+
+					if( INIT->getRuling() == nullptr ){	//First part...
+
+						ILAST = new TextPart(aux);
+						INIT->setRuling(ILAST);
+
+					}else{
+
+						ILAST->setNext( new TextPart(aux) );
+						ILAST = ILAST->getNext();
+					}
+
+					ILAST->setNext( new Coordenate(column,constC,line,constL) );
+					ILAST = ILAST->getNext();
 				}
 			}
 
@@ -434,12 +439,12 @@ natural TableCell::process_rule( AeternalBuffer& text, AeternalBuffer& auxBuf, c
 
 		do{
 
-			if( str[j] != '-' || str[j += 1 ] != '&' || str[j += 1] != '#' )	//If it's not a rule, skip it.
+			if( str[j] != '-' || str[j+1] != '&' || str[j+2] != '#' )	//If it's not a rule, skip it.
 				break;
 			else
-				++j;
+				j += 3;
 
-			i += 3 + TableCell::process_rule(text,auxBuf,str+j,INIT->getRuling(),ILAST);
+			i += 3 + TableCell::process_rule(text,auxBuf,str+j,FIRST,LAST);
 			done = true;
 
 		}while( false );
@@ -451,12 +456,27 @@ natural TableCell::process_rule( AeternalBuffer& text, AeternalBuffer& auxBuf, c
 		++i;
 	}
 
-return i+3;}
+	INIT->setLast(ILAST);
+	return i+3;
+
+}catch(bad_alloc){
+
+	fail_report("natural TableCell::process_rule(AeternalBuffer&,AeternalBuffer&,const char*,const CellPart *&,CellPart *&)",ERROR_CODE::BAD_ALLOC);
+}
 
 
-TableCell* TableCell::getCellApplying( const progression_t pt, const apply_on where, const int step, const natural NbIter) const noexcept try{
+TableCell* TableCell::getCellApplying( const progression_t pt, const apply_on where, const int step, const natural NbIter) const noexcept{
 
-	TableCell* temp = new TableCell(this->NbNextEmpty,this->NbPartes);
+	TableCell* temp;
+
+	try{
+
+		temp = new TableCell(this->NbNextEmpty,this->NbPartes);
+
+	}catch(bad_alloc){
+
+		fail_report("TableCell* TableCell::getCellApplying(progression_t,apply_on,natural,natural) const",ERROR_CODE::BAD_ALLOC);
+	}
 
 	if( this->FIRST != nullptr ){
 
@@ -479,12 +499,7 @@ TableCell* TableCell::getCellApplying( const progression_t pt, const apply_on wh
 		}
 	}
 
-	return temp;
-
-}catch(bad_alloc){
-
-	fail_report("TableCell* TableCell::getCellApplying(progression_t,apply_on,natural,natural) const",ERROR_CODE::BAD_ALLOC);
-}
+return temp;}
 
 
 void TableCell::print( const bool keepMarkUp) const noexcept{

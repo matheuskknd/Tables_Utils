@@ -6,12 +6,13 @@
 class Rule : public CellPart{
 
 /*
-*	48 bytes rule part.
+*	56 bytes rule part.
 */
 
 private: /* Attributes */
 
-	const CellPart* ruled;
+	const CellPart* F_ruled;
+	CellPart* L_ruled;
 
 	const natural frequency;
 	const natural step;
@@ -33,15 +34,19 @@ private: /* Methods */
 
 public: /* Methods */
 
-	inline constexpr Rule( const natural stp, const natural frec, const natural snc, const natural utl, const natural vgr, const progression_t pgrt, const apply_on apl) noexcept : ruled{nullptr}, frequency{frec}, step{stp}, since{snc}, until{utl}, vigor{vgr}, pgt{pgrt}, aplo{apl} {}
+	inline constexpr Rule( const natural stp, const natural frec, const natural snc, const natural utl, const natural vgr, const progression_t pgrt, const apply_on apl) noexcept : F_ruled{nullptr}, L_ruled{nullptr}, frequency{frec}, step{stp}, since{snc}, until{utl}, vigor{vgr}, pgt{pgrt}, aplo{apl} {}
 	virtual ~Rule() noexcept override;
+
+	virtual inline void setNext( CellPart* const cp) noexcept override{ runtime_assert_nullptr_excpt(L_ruled,"virtual void Rule::setNext(CellPart*)"); this->CellPart::setNext(cp); L_ruled->setNext(cp);}
+	inline void setLast( CellPart* const cp) noexcept{ L_ruled = cp;}
 
 	virtual CellPart* applyInColumns( const natural iter, const int step, const operation oprtn) const noexcept override;
 	virtual CellPart* applyInLines( const natural iter, const int step, const operation oprtn) const noexcept override;
 
 	virtual void print( const bool keepMarkUp) const noexcept override;
 
-	inline const CellPart*& getRuling(void) noexcept{ return ruled;}
+	inline void setRuling( const CellPart* const cp) noexcept{ F_ruled = cp;}
+	inline const CellPart* getRuling(void) noexcept{ return F_ruled;}
 };
 
 #endif /* RULE_H */
