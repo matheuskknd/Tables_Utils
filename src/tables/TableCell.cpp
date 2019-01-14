@@ -102,25 +102,31 @@ TableCell::TableCell( const char * const str) noexcept try{
 
 					delete[] aux;
 
-				}else if( size <= 8 ){
+				}else if( size <= 14 ){
 
-					char ttt[8] = {'\0','\0','\0','\0','\0','\0','\0','\0'};
+					char ttt1[8] = {'\0','\0','\0','\0','\0','\0','\0','\0'};
+					char ttt2[6] = {'\0','\0','\0','\0','\0','\0'};
 
-					for( slimNatural i = 0; aux[i] != '\0'; ++i)
-						ttt[i] = aux[i];
+					slimNatural i = 0;
+
+					for( slimNatural j = 0; aux[i] != '\0' && j != 8; ++i, ++j)
+						ttt1[j] = aux[i];
+
+					for( slimNatural j = 0; aux[i] != '\0'; ++i, ++j)
+						ttt2[j] = aux[i];
 
 					if( FIRST == nullptr ){	//First part...
 
-						LAST = new SmallText(ttt[0],ttt[1],ttt[2],ttt[3],ttt[4],ttt[5],ttt[6],ttt[7]);
+						LAST = new SmallText(ttt1[0],ttt1[1],ttt1[2],ttt1[3],ttt1[4],ttt1[5],ttt1[6],ttt1[7]);
 						FIRST = LAST;
 
 					}else{
 
-						LAST->setNext( new SmallText(ttt[0],ttt[1],ttt[2],ttt[3],ttt[4],ttt[5],ttt[6],ttt[7]) );
+						LAST->setNext( new SmallText(ttt1[0],ttt1[1],ttt1[2],ttt1[3],ttt1[4],ttt1[5],ttt1[6],ttt1[7]) );
 						LAST = LAST->getNext();
 					}
 
-					LAST->setNext( new Coordenate(column,constC,line,constL) );
+					LAST->setNext( new Coordenate(column,constC,line,constL,char6(ttt2[0],ttt2[1],ttt2[2],ttt2[3],ttt2[4],ttt2[5])) );
 					LAST = LAST->getNext();
 					delete[] aux;
 
@@ -369,26 +375,32 @@ natural TableCell::process_rule( AeternalBuffer& text, AeternalBuffer& auxBuf, c
 
 					delete[] aux;
 
-				}else if( size <= 8 ){
+				}else if( size <= 14 ){
 
-					char ttt[8] = {'\0','\0','\0','\0','\0','\0','\0','\0'};
+					char ttt1[8] = {'\0','\0','\0','\0','\0','\0','\0','\0'};
+					char ttt2[6] = {'\0','\0','\0','\0','\0','\0'};
 
-					for( slimNatural i = 0; aux[i] != '\0'; ++i)
-						ttt[i] = aux[i];
+					slimNatural i = 0;
 
-					if( INIT->getRuling() == nullptr ){	//First part...
+					for( slimNatural j = 0; aux[i] != '\0' && j != 8; ++i, ++j)
+						ttt1[j] = aux[i];
 
-						ILAST = new SmallText(ttt[0],ttt[1],ttt[2],ttt[3],ttt[4],ttt[5],ttt[6],ttt[7]);
-						INIT->setRuling(ILAST);
+					for( slimNatural j = 0; aux[i] != '\0'; ++i, ++j)
+						ttt2[j] = aux[i];
+
+					if( FIRST == nullptr ){	//First part...
+
+						LAST = new SmallText(ttt1[0],ttt1[1],ttt1[2],ttt1[3],ttt1[4],ttt1[5],ttt1[6],ttt1[7]);
+						FIRST = LAST;
 
 					}else{
 
-						ILAST->setNext( new SmallText(ttt[0],ttt[1],ttt[2],ttt[3],ttt[4],ttt[5],ttt[6],ttt[7]) );
-						ILAST = ILAST->getNext();
+						LAST->setNext( new SmallText(ttt1[0],ttt1[1],ttt1[2],ttt1[3],ttt1[4],ttt1[5],ttt1[6],ttt1[7]) );
+						LAST = LAST->getNext();
 					}
 
-					ILAST->setNext( new Coordenate(column,constC,line,constL) );
-					ILAST = ILAST->getNext();
+					LAST->setNext( new Coordenate(column,constC,line,constL,char6(ttt2[0],ttt2[1],ttt2[2],ttt2[3],ttt2[4],ttt2[5])) );
+					LAST = LAST->getNext();
 					delete[] aux;
 
 				}else{
