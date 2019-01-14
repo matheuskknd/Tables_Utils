@@ -13,9 +13,9 @@ aux=$(pwd);
 cd "${0%./*}"
 
 #Global variables:
+	LOCAL_pwd=$aux;		#Already well-defined!
 	MAIN_pwd=$(pwd);	#Already well-defined!
 
-cd "$aux"
 unset aux;
 
 function usage(){
@@ -67,7 +67,7 @@ function param_checker(){
 
 		if (( $i == 0 )) ; then
 
-			if [ ! -e "$aux" ] ; then echo -e "\nThe file '$aux' does not exist, closing program...\n" >&2; exit 2; fi
+			if [ ! -e "$LOCAL_pwd/$aux" ] ; then echo -e "\nThe file '$LOCAL_pwd/$aux' does not exist, closing program...\n" >&2; exit 2; fi
 
 		elif (( $i == 1 )) ; then
 
@@ -152,9 +152,21 @@ function main(){
 
 	echo -n -e "Starting to process the text...\n"
 
-	"$MAIN_pwd/bin/./Table_Utils.run" "$@"
+	cd "$LOCAL_pwd"
 
-	echo -n -e "\nClosing Script normally. Job is finished!\n\n"
+	if [ "${1##*_pos_processed}" != "$1" ] ; then aux="${1%%_pos_processed*}_pos_pos_processed.txt"; else aux="${1}_pos_processed.txt"; fi
+
+	"$MAIN_pwd/bin/./Table_Utils.run" "$@" >"$aux"
+
+	if (( $? != 0 )) ; then
+
+		rm "$aux"
+		echo -n -e "\nClosing Script normally. Job couldn't be done.\n\n"
+
+	else
+
+		echo -n -e "\nClosing Script normally. Job is finished, saved in: $aux!\n\n"
+	fi
 
 exit 0;}
 
