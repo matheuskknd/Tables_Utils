@@ -76,7 +76,7 @@ clean:
 CPP = g++ -std=c++14
 
 # Compilation parameters
-CCOPT = -m64 -O3 -g -fPIC -fexceptions -DIL_STD
+CCOPT = -pthread -m64 -O3 -g -fPIC -fexceptions -DIL_STD
 
 # Header's include path
 CCFLAGS = $(CCOPT)
