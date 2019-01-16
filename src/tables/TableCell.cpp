@@ -6,12 +6,7 @@ using std::bad_alloc;
 #include<iostream>
 using std::cout;
 
-TableCell::TableCell( const char * const str) noexcept try{
-
-	FIRST = nullptr;
-	next = nullptr;
-
-	NbPartes = ( NbNextEmpty = 0 );
+void TableCell::setCell( const char * const str) noexcept try{
 
 	//Parses, Syntactic Checking and creation
 

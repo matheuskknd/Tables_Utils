@@ -6,6 +6,16 @@ using std::bad_alloc;
 #include<iostream>
 using std::cout;
 
+#ifdef PARALLELIZING
+
+	#include<thread>
+	using std::thread;
+
+	#include<list>
+	using std::list;
+
+#endif
+
 inline natural TableLine::pow( const natural base, const natural exp) noexcept{
 
 	natural aux = 1;
@@ -22,6 +32,12 @@ void TableLine::setLine( const char * const line) noexcept try{
 	bool isLast = false;
 	AeternalBuffer buf;
 	char aux;
+
+#ifdef PARALLELIZING
+
+	list<thread> workerList;	//Each element works on a cell.
+
+#endif
 
 	while( !isLast ){
 
@@ -40,17 +56,41 @@ void TableLine::setLine( const char * const line) noexcept try{
 				this->NbCells = 1 + ( NbEmpty = empty );
 				empty = 0;
 
-				FIRST = ( LAST = new TableCell(buf.compileAndRelease()) );
+#ifdef PARALLELIZING
 
-			}else{							//If it's any other cell with real content.
+				const char* const auxT = buf.compileAndRelease();
+				TableCell* const tempCell = new TableCell;
+				FIRST = ( LAST = tempCell );
+
+				workerList.emplace_back( [tempCell,auxT](void) noexcept -> void{ tempCell->setCell(auxT); } );
+#else
+
+				FIRST = ( LAST = new TableCell );
+				LAST->setCell(buf.compileAndRelease());
+#endif
+			}else{								//If it's any other cell with real content.
 
 				LAST->setNbNextEmpty(empty);
 				this->NbCells += 1 + empty;
 				empty = 0;
 
-				auto aux = new TableCell(buf.compileAndRelease());
+#ifdef PARALLELIZING
+
+				const char* const auxT = buf.compileAndRelease();
+				TableCell* const tempCell = new TableCell;
+
+				workerList.emplace_back( [tempCell,auxT](void) noexcept -> void{ tempCell->setCell(auxT); } );
+
+				LAST->setNext(tempCell);
+				LAST = tempCell;
+#else
+
+				auto aux = new TableCell;
+				aux->setCell(buf.compileAndRelease());
+
 				LAST->setNext(aux);
 				LAST = aux;
+#endif
 			}
 
 		}else
@@ -60,6 +100,13 @@ void TableLine::setLine( const char * const line) noexcept try{
 	}
 
 	delete[] line;
+
+#ifdef PARALLELIZING
+
+	for( thread& it : workerList )
+		if( it.joinable() )
+			it.join();
+#endif
 
 }catch(bad_alloc){
 

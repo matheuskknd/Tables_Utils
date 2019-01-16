@@ -5,6 +5,13 @@
 #include<new>
 using std::bad_alloc;
 
+#ifdef PARALLELIZING
+
+	#include<thread>
+	using std::thread;
+
+#endif
+
 Table::Table( const char * const fName) noexcept try{
 
 	FILE * file = fopen(fName,"rb");
@@ -21,12 +28,23 @@ Table::Table( const char * const fName) noexcept try{
 
 	//Allocating Lines:
 
+#ifdef PARALLELIZING
+
+	thread* worker = nullptr;	//Each worker will build one line, in parallel.
+
+#endif
+
 	if( NbLines == 0 )
 		this->line = nullptr;
 
 	else{
 
 		this->line = new TableLine [NbLines];
+
+#ifdef PARALLELIZING
+
+		worker = new thread [NbLines];
+#endif
 
 		//Creting Lines:
 
@@ -42,15 +60,31 @@ Table::Table( const char * const fName) noexcept try{
 
 				if( auxBuf[i] == '\n' ){
 
-					//Colocar cada linha para ser criada por uma thread distinta...
+#ifdef PARALLELIZING
+
+					const char* const&& aux = buf.compileAndRelease();
+					TableLine * const&& LNE = this->line+l;
+
+					worker[l] = (thread&&) thread( [aux,LNE](void) noexcept -> void{ LNE->setLine(aux); } );
+#else
 
 					line[l].setLine(buf.compileAndRelease());
+#endif
 					++l;
 
 				}else
 					buf << auxBuf[i];
 			}
 		}
+
+#ifdef PARALLELIZING
+
+		for( natural i = 0; i != NbLines; ++i)	//Waits for all the threads to finish their job
+			if( worker[i].joinable() )
+				worker[i].join();
+
+		delete[] worker;	//The thread's job is finished
+#endif
 
 		runtime_assert(buf.empty(),"there's still characters on the buffer in: Table::Table(const char*)",ERROR_CODE::LOGIC);
 		delete[] auxBuf;
@@ -115,7 +149,6 @@ Table* Table::create_table( const progression_t pt, const apply_on where, const 
 
 	fail_report("Table* Table::create_table(progression_t,apply_on,natural,natural) const",ERROR_CODE::BAD_ALLOC);
 }
-
 
 void Table::print( const bool keepMarkUp) const noexcept{
 

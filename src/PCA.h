@@ -2,7 +2,8 @@
 #define PRE_COMPILING_ACKNOWLEDGEMENTS_H
 
 //Start: Global Main definitions
-	#define TESTING_PROGRAM
+//	#define TESTING_PROGRAM
+	#define PARALLELIZING
 //End: Global Main definitions
 
 //Start: Global Classes pre-definitions

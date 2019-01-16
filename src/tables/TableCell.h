@@ -27,8 +27,10 @@ private: /* Methods */
 
 public: /* Methods */
 
-	TableCell( const char * const from) noexcept;
+	inline constexpr TableCell(void) noexcept : next{nullptr}, FIRST{nullptr}, NbNextEmpty{0}, NbPartes{0} {}
 	~TableCell() noexcept;
+
+	void setCell( const char * const from) noexcept;
 
 	inline void setNbNextEmpty( const natural NbNextEmpty) noexcept{ this->NbNextEmpty = NbNextEmpty;}
 	inline void setNext( const TableCell* next) noexcept{ this->next = next;}
