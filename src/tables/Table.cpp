@@ -10,6 +10,14 @@ using std::bad_alloc;
 	#include<thread>
 	using std::thread;
 
+	#define this_thread std::this_thread	//Nested namespace...
+
+	#include<atomic>
+	using std::memory_order_relaxed;
+	using std::memory_order_acquire;
+	using std::memory_order_release;
+	using FLAG = std::atomic<bool>;
+
 #endif
 
 Table::Table( const char * const fName) noexcept try{
@@ -30,7 +38,13 @@ Table::Table( const char * const fName) noexcept try{
 
 #ifdef PARALLELIZING
 
-	thread* worker = nullptr;	//Each worker will build one line, in parallel.
+	const natural NbThreads = thread::hardware_concurrency() == 0 ? 1 : ( NbLines > thread::hardware_concurrency() ? thread::hardware_concurrency() : NbLines );
+
+	thread worker[NbThreads];
+	FLAG busy[NbThreads];
+
+	for( natural i = 0; i != NbThreads; ++i)
+		busy[i].store(false,memory_order_relaxed);
 
 #endif
 
@@ -40,11 +54,6 @@ Table::Table( const char * const fName) noexcept try{
 	else{
 
 		this->line = new TableLine [NbLines];
-
-#ifdef PARALLELIZING
-
-		worker = new thread [NbLines];
-#endif
 
 		//Creting Lines:
 
@@ -64,8 +73,30 @@ Table::Table( const char * const fName) noexcept try{
 
 					const char* const&& aux = buf.compileAndRelease();
 					TableLine * const&& LNE = this->line+l;
+					bool done = false;
 
-					worker[l] = (thread&&) thread( [aux,LNE](void) noexcept -> void{ LNE->setLine(aux); } );
+					while( true ){
+
+						for( natural i = 0; i != NbThreads; ++i){
+
+							if( busy[i].load(memory_order_acquire) == false ){
+
+								if( worker[i].joinable() )	//Just to loose the joinable status...
+									worker[i].join();
+
+								busy[i].store(true,memory_order_relaxed);
+
+								worker[i] = (thread&&) thread( [aux,LNE,&busy,i](void) noexcept -> void{ LNE->setLine(aux); busy[i].store(false,memory_order_release); } );
+								done = true;
+								break;
+							}
+						}
+
+						if( done )
+							break;
+						else
+							this_thread::yield();
+					}
 #else
 
 					line[l].setLine(buf.compileAndRelease());
@@ -79,11 +110,9 @@ Table::Table( const char * const fName) noexcept try{
 
 #ifdef PARALLELIZING
 
-		for( natural i = 0; i != NbLines; ++i)	//Waits for all the threads to finish their job
+		for( natural i = 0; i != NbThreads; ++i)	//Waits for all the threads to finish their job
 			if( worker[i].joinable() )
 				worker[i].join();
-
-		delete[] worker;	//The thread's job is finished
 #endif
 
 		runtime_assert(buf.empty(),"there's still characters on the buffer in: Table::Table(const char*)",ERROR_CODE::LOGIC);
