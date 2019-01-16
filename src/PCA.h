@@ -3,7 +3,7 @@
 
 //Start: Global Main definitions
 //	#define TESTING_PROGRAM
-	#define PARALLELIZING
+//	#define PARALLELIZING	//It's causing to the program to run slower than without it!
 //End: Global Main definitions
 
 //Start: Global Classes pre-definitions
