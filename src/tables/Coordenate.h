@@ -32,7 +32,7 @@ private: /* Attributes */
 public: /* Methods */
 
 	inline constexpr Coordenate( const natural c, const bool constC, const natural l, const bool constL, const char6 preStr) noexcept : CellPart(), column{c}, line{l}, column_is_const{constC}, line_is_const{constL}, pre_str{preStr} {}
-	inline constexpr Coordenate( const natural c, const bool constC, const natural l, const bool constL) noexcept : Coordenate(c,l,constC,constL,char6('\0','\0','\0','\0','\0','\0')) {}
+	inline constexpr Coordenate( const natural c, const bool constC, const natural l, const bool constL) noexcept : Coordenate(c,constC,l,constL,char6('\0','\0','\0','\0','\0','\0')) {}
 	virtual inline ~Coordenate() override = default;
 
 	virtual inline CellPart* applyInColumns( const natural iter, const int step, const operation oprtn) const noexcept override;
