@@ -7,6 +7,8 @@ class Converter final{
 
 private: /* Attributes */
 
+	enum GREATER{ NATURAL = static_cast<natural>(-1) };
+
 	static constexpr natural TableLineLimit = 1048576;	//Limit line for both
 	static natural TableColumnLimit;
 
@@ -15,16 +17,16 @@ public: /* Methods */
 	Converter(void) = delete;
 	~Converter() = delete;
 
-	inline static void setCompatibilityToExcel(void) noexcept{ if( TableColumnLimit == 0 ) TableColumnLimit = parse_String_Column("XFD");}
-	inline static void setCompatilityToCalc(void) noexcept{ if( TableColumnLimit == 0 ) TableColumnLimit = parse_String_Column("AMJ");}
+	inline static void setCompatibilityToExcel(void) noexcept{ if( TableColumnLimit == GREATER::NATURAL ) TableColumnLimit = parse_String_Column(3,"XFD");}
+	inline static void setCompatilityToCalc(void) noexcept{ if( TableColumnLimit == GREATER::NATURAL ) TableColumnLimit = parse_String_Column(3,"AMJ");}
 
 	inline static natural getColumnLimit(void) noexcept{ return TableColumnLimit;}
 	inline static natural getLineLimit(void) noexcept{ return TableLineLimit;}
 
-	static void parse_Column_String( const natural Column, AeternalBuffer& bucket) noexcept;
-	static natural parse_String_Column( const char * const column) noexcept;
+	static natural parse_String_Column( natural legth, const char * const column) noexcept;
+	static void parse_Column_String( natural Column, AeternalBuffer& bucket) noexcept;
 
-	inline static natural parse_Char_Column( const char column) noexcept{ return column - 'A' + 1;}
+	inline static constexpr natural parse_Char_Column( const char column) noexcept{ return column - 'A' + 1;}
 };
 
 #endif /* CONVERTER_H_ */

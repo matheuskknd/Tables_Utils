@@ -54,8 +54,8 @@ void TableCell::setCell( const char * const str) noexcept try{
 						break;	//Returns to the main loop...
 				}
 
-				const char* aux = auxBuf.compileAndRelease();
-				const natural column = Converter::parse_String_Column(aux);
+				const char* aux;
+				const natural column = Converter::parse_String_Column(auxBuf.size(),aux = auxBuf.compileAndRelease());
 				delete[] aux;
 
 				if( str[j] != '$' && !( str[j] >= '0' && str[j] <= '9' ) )
@@ -327,8 +327,7 @@ natural TableCell::process_rule( AeternalBuffer& text, AeternalBuffer& auxBuf, c
 						break;	//Returns to the main loop...
 				}
 
-				const char* aux = auxBuf.compileAndRelease();
-				const natural column = Converter::parse_String_Column(aux);
+				const natural column = Converter::parse_String_Column(auxBuf.size(),aux = auxBuf.compileAndRelease());
 				delete[] aux;
 
 				if( str[j] != '$' && !( str[j] >= '0' && str[j] <= '9' ) )

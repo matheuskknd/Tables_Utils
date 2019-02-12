@@ -9,13 +9,6 @@ using std::cerr;
 using std::strtoul;
 using std::atoi;
 
-[[noreturn]] void usage( const char * const argv_0){
-
-	cout<< "Usage:\n";
-
-exit(2);}
-
-
 [[noreturn]] void fail_report( const char * const description, const ERROR_CODE error) noexcept{
 
 	static constexpr const char * hashes = "################################";
