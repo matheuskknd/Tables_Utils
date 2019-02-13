@@ -7,6 +7,7 @@ using std::cerr;
 
 #include<cstring>
 using std::strtoul;
+using std::strcmp;
 using std::atoi;
 
 [[noreturn]] void fail_report( const char * const description, const ERROR_CODE error) noexcept{

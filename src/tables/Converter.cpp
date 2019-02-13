@@ -4,7 +4,7 @@ natural Converter::TableColumnLimit = GREATER::NATURAL;
 
 void Converter::parse_Column_String( natural column, AeternalBuffer& bucket) noexcept{
 
-//The parse is made correctly until: "MWLQKWV" == "4294967295", that is the biggest natural number on 32 bits variable.
+//The parse is made correctly until: "MWLQKWU" == "4294967295", that is the biggest natural number on 32 bits variable.
 
 	if( column > TableColumnLimit )
 		fail_report("One column exceeds the limit suported by the specified table program.",ERROR_CODE::_DOMAIN);
@@ -16,22 +16,20 @@ void Converter::parse_Column_String( natural column, AeternalBuffer& bucket) noe
 
 	sum -= aux;
 
-	while( ( aux /= 26 ) != 1 ){
+	while( ( aux /= 26 ) != 0 ){
 
-		char temp = (column-sum-1)/aux;
+		const char&& temp = (column-sum-1)/aux;
 		column -= (1+temp)*aux;
 
 		bucket << static_cast<char>( temp + 'A' );
 		sum -= aux;
 	}
-
-	bucket << static_cast<char>( column + 'A' -1 );
 }
 
 
 natural Converter::parse_String_Column( natural legth, const char * const column) noexcept{
 
-//The parse is made correctly until: "MWLQKWV" == "4294967295", that is the biggest natural number on 32 bits variable.
+//The parse is made correctly until: "MWLQKWU" == "4294967295", that is the biggest natural number on 32 bits variable.
 
 	bigNatural aux = 1, sum = 0;
 
