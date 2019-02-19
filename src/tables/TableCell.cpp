@@ -6,6 +6,17 @@ using std::bad_alloc;
 #include<iostream>
 using std::cout;
 
+inline natural getColumn( AeternalBuffer& str) noexcept{
+
+	natural length = str.size();
+	const char * const aux = str.compileAndRelease();
+
+	const natural temp = Converter::parse_String_Column(length,aux);
+	delete[] aux;
+
+return temp;}
+
+
 void TableCell::setCell( const char * const str) noexcept try{
 
 	//Parses, Syntactic Checking and creation
@@ -14,6 +25,7 @@ void TableCell::setCell( const char * const str) noexcept try{
 	CellPart * LAST = nullptr;
 	natural j, i = 0;
 
+	char* aux;
 	bool done;
 
 	while( str[i] != '\0' ){
@@ -25,51 +37,24 @@ void TableCell::setCell( const char * const str) noexcept try{
 
 			if( str[j] == '$' || ( str[j] >= 'A' && str[j] <= 'Z' ) ){
 
-				auxBuf.justRelease();
 				const bool constC = str[j] == '$';
+				auxBuf.justRelease();
 
-				if( !constC ){		//The first element is a letter.
-
-					while( true ){
-
-						if( str[j] >= 'A' && str[j] <= 'Z' )
-							auxBuf << str[j];
-						else
-							break;
-
-						++j;
-					}
-
-				}else{
-
-					bool done = false;
+				if( constC )
 					++j;
 
-					while( true ){
+				if( str[j] < 'A' && str[j] > 'Z' )
+					break;			//It's not a formula, so it returns to the main loop...
 
-						if( str[j] >= 'A' && str[j] <= 'Z' ){
+				do{
 
-							auxBuf << str[j];
-							done = true;
+					auxBuf << str[j];
+					++j;
 
-						}else
-							break;
-
-						++j;
-					}
-
-					if( !done )
-						break;	//Returns to the main loop...
-				}
-
-				const natural lenght = auxBuf.size();
-				const char* aux = auxBuf.compileAndRelease();
-
-				const natural column = Converter::parse_String_Column(lenght,aux);
-				delete[] aux;
+				}while( str[j] >= 'A' && str[j] <= 'Z' );
 
 				if( str[j] != '$' && !( str[j] >= '0' && str[j] <= '9' ) )
-					break;		//Returns to the main loop...
+					break;			//It's not a formula, so it returns to the main loop...
 
 				const bool constL = str[j] == '$';
 
@@ -77,15 +62,16 @@ void TableCell::setCell( const char * const str) noexcept try{
 					++j;
 
 				if( str[j] < '0' && str[j] > '9' )
-					break;		//Returns to the main loop...
+					break;			//It's not a formula, so it returns to the main loop...
 
-				char* aux2;
-				const natural line = strtoul(&str[j],&aux2,10);
-				i += aux2 - &str[i];
+				const natural line = strtoul(str+j,&aux,10);
+				const natural column = getColumn(auxBuf);
+
+				i += aux - (str+i);
+				done = true;
 
 				const natural size = text.size();
-				aux = text.compileAndRelease();
-				done = true;
+				aux  = text.compileAndRelease();
 
 				if( size <= 6 ){	//The aux chars enter inside the new coordenate, otherwise it becomes another text part apart.
 
@@ -299,7 +285,7 @@ natural TableCell::process_rule( AeternalBuffer& text, AeternalBuffer& auxBuf, c
 			fail_report(unfinished,ERROR_CODE::RUNTIME);
 
 		if( str[i] == '#' && str[i+1] == '&' && str[i+2] == '-' )
-			break;
+			break;			//It's the end of the current rule, return to caller...
 
 		done = false;
 		j = i;
@@ -308,51 +294,24 @@ natural TableCell::process_rule( AeternalBuffer& text, AeternalBuffer& auxBuf, c
 
 			if( str[j] == '$' || ( str[j] >= 'A' && str[j] <= 'Z' ) ){
 
-				auxBuf.justRelease();
 				const bool constC = str[j] == '$';
+				auxBuf.justRelease();
 
-				if( !constC ){		//The first element is a letter.
-
-					while( true ){
-
-						if( str[j] >= 'A' && str[j] <= 'Z' )
-							auxBuf << str[j];
-						else
-							break;
-
-						++j;
-					}
-
-				}else{
-
-					bool done = false;
+				if( constC )
 					++j;
 
-					while( true ){
+				if( str[j] < 'A' && str[j] > 'Z' )
+					break;			//It's not a formula, so it returns to the main loop...
 
-						if( str[j] >= 'A' && str[j] <= 'Z' ){
+				do{
 
-							auxBuf << str[j];
-							done = true;
+					auxBuf << str[j];
+					++j;
 
-						}else
-							break;
-
-						++j;
-					}
-
-					if( !done )
-						break;	//Returns to the main loop...
-				}
-
-				const natural lenght = auxBuf.size();
-				aux = auxBuf.compileAndRelease();
-
-				const natural column = Converter::parse_String_Column(lenght,aux);
-				delete[] aux;
+				}while( str[j] >= 'A' && str[j] <= 'Z' );
 
 				if( str[j] != '$' && !( str[j] >= '0' && str[j] <= '9' ) )
-					break;		//Returns to the main loop...
+					break;			//It's not a formula, so it returns to the main loop...
 
 				const bool constL = str[j] == '$';
 
@@ -360,15 +319,16 @@ natural TableCell::process_rule( AeternalBuffer& text, AeternalBuffer& auxBuf, c
 					++j;
 
 				if( str[j] < '0' && str[j] > '9' )
-					break;		//Returns to the main loop...
+					break;			//It's not a formula, so it returns to the main loop...
 
-				char* aux2;
-				const natural line = strtoul(str+j,&aux2,10);
-				i += aux2 - (str+i);
+				const natural line = strtoul(str+j,&aux,10);
+				const natural column = getColumn(auxBuf);
+
+				i += aux - (str+i);
+				done = true;
 
 				const natural size = text.size();
-				aux = text.compileAndRelease();
-				done = true;
+				aux  = text.compileAndRelease();
 
 				if( size <= 6 ){	//The aux chars enter inside the new coordenate, otherwise it becomes another text part apart.
 
