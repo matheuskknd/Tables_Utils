@@ -33,6 +33,8 @@ public: /* Methods */
 	void setCell( const char * const from) noexcept;
 
 	inline void setNbNextEmpty( const natural NbNextEmpty) noexcept{ this->NbNextEmpty = NbNextEmpty;}
+	inline natural getNbNextEmpty(void) noexcept{ return NbNextEmpty;}
+
 	inline void setNext( const TableCell* next) noexcept{ this->next = next;}
 
 	inline const TableCell * getNext(void) const noexcept{ return next;}

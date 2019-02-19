@@ -1,6 +1,5 @@
-#include"Table.h"
-
 #include"../buffers/AeternalBuffer.h"
+#include"Table.h"
 
 #include<new>
 using std::bad_alloc;
@@ -16,7 +15,12 @@ using std::bad_alloc;
 	using std::memory_order_relaxed;
 	using std::memory_order_acquire;
 	using std::memory_order_release;
-	using FLAG = std::atomic<bool>;
+	using std::atomic;
+
+	#include<chrono>
+	using std::chrono::milliseconds;
+	using std::chrono::microseconds;
+	using std::chrono::nanoseconds;
 
 #endif
 
@@ -39,12 +43,7 @@ Table::Table( const char * const fName) noexcept try{
 #ifdef PARALLELIZING
 
 	const natural NbThreads = thread::hardware_concurrency() == 0 ? 1 : ( NbLines > thread::hardware_concurrency() ? thread::hardware_concurrency() : NbLines );
-
-	thread worker[NbThreads];
-	FLAG busy[NbThreads];
-
-	for( natural i = 0; i != NbThreads; ++i)
-		busy[i].store(false,memory_order_relaxed);
+	atomic<natural> NbWorkers(0);
 
 #endif
 
@@ -58,8 +57,8 @@ Table::Table( const char * const fName) noexcept try{
 		//Creting Lines:
 
 		char* auxBuf = new char [4096];
-		natural aux, maxC, l = 0;
 		AeternalBuffer buf;
+		natural aux, l = 0;
 
 		rewind(file);
 
@@ -71,32 +70,20 @@ Table::Table( const char * const fName) noexcept try{
 
 #ifdef PARALLELIZING
 
-					const char* const&& aux = buf.compileAndRelease();
-					TableLine * const&& LNE = this->line+l;
-					bool done = false;
+					const char* const aux = buf.compileAndRelease();
+					TableLine * const LNE = l+this->line;
 
-					while( true ){
+					natural wait_time = 1;
 
-						for( natural i = 0; i != NbThreads; ++i){
+					while( NbWorkers.load(memory_order_acquire) == NbThreads ){
 
-							if( busy[i].load(memory_order_acquire) == false ){
-
-								if( worker[i].joinable() )	//Just to loose the joinable status...
-									worker[i].join();
-
-								busy[i].store(true,memory_order_relaxed);
-
-								worker[i] = (thread&&) thread( [aux,LNE,&busy,i](void) noexcept -> void{ LNE->setLine(aux); busy[i].store(false,memory_order_release); } );
-								done = true;
-								break;
-							}
-						}
-
-						if( done )
-							break;
-						else
-							this_thread::yield();
+						this_thread::sleep_for(microseconds(wait_time));
+						wait_time <<= wait_time > 1000 ? 0 : 1;
 					}
+
+					NbWorkers.fetch_add(1,memory_order_relaxed);
+
+					thread( [aux,LNE,&NbWorkers](void) noexcept -> void{ LNE->setLine(aux); NbWorkers.fetch_sub(1,memory_order_release); return ;} ).detach();
 #else
 
 					line[l].setLine(buf.compileAndRelease());
@@ -108,24 +95,28 @@ Table::Table( const char * const fName) noexcept try{
 			}
 		}
 
+		delete[] auxBuf;
+
 #ifdef PARALLELIZING
 
-		for( natural i = 0; i != NbThreads; ++i)	//Waits for all the threads to finish their job
-			if( worker[i].joinable() )
-				worker[i].join();
+		natural wait_time = 1;
+
+		while( NbWorkers.load(memory_order_acquire) != 0 ){
+
+			this_thread::sleep_for(microseconds(wait_time));
+			wait_time <<= wait_time > 1000 ? 0 : 1;
+		}
 #endif
 
 		runtime_assert(buf.empty(),"there's still characters on the buffer in: Table::Table(const char*)",ERROR_CODE::LOGIC);
-		delete[] auxBuf;
-
-		maxC = line[0].getNbCells();
+		natural maxC = line[0].getNbCells();
 
 		for( l = 1; l < NbLines; ++l)
 			if( line[l].getNbCells() > maxC )
 				maxC = line[l].getNbCells();
 
 		for( l = 0; l != NbLines; ++l)
-			line[l].setCorrectNbCells(maxC);	//Erro de segmentacao encontrado...
+			line[l].setCorrectNbCells(maxC);
 	}
 
 	fclose(file);

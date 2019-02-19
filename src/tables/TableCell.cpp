@@ -10,8 +10,8 @@ void TableCell::setCell( const char * const str) noexcept try{
 
 	//Parses, Syntactic Checking and creation
 
+	static thread_local AeternalBuffer text, auxBuf;
 	CellPart * LAST = nullptr;
-	AeternalBuffer text, auxBuf;
 	natural j, i = 0;
 
 	bool done;
@@ -30,18 +30,23 @@ void TableCell::setCell( const char * const str) noexcept try{
 
 				if( !constC ){		//The first element is a letter.
 
-					for( natural i = 0; i != 3; ++i, ++j)
+					while( true ){
+
 						if( str[j] >= 'A' && str[j] <= 'Z' )
 							auxBuf << str[j];
 						else
 							break;
+
+						++j;
+					}
 
 				}else{
 
 					bool done = false;
 					++j;
 
-					for( natural i = 0; i != 3; ++i, ++j)
+					while( true ){
+
 						if( str[j] >= 'A' && str[j] <= 'Z' ){
 
 							auxBuf << str[j];
@@ -50,12 +55,17 @@ void TableCell::setCell( const char * const str) noexcept try{
 						}else
 							break;
 
+						++j;
+					}
+
 					if( !done )
 						break;	//Returns to the main loop...
 				}
 
-				const char* aux;
-				const natural column = Converter::parse_String_Column(auxBuf.size(),aux = auxBuf.compileAndRelease());
+				const natural lenght = auxBuf.size();
+				const char* aux = auxBuf.compileAndRelease();
+
+				const natural column = Converter::parse_String_Column(lenght,aux);
 				delete[] aux;
 
 				if( str[j] != '$' && !( str[j] >= '0' && str[j] <= '9' ) )
@@ -303,18 +313,23 @@ natural TableCell::process_rule( AeternalBuffer& text, AeternalBuffer& auxBuf, c
 
 				if( !constC ){		//The first element is a letter.
 
-					for( natural i = 0; i != 3; ++i, ++j)
+					while( true ){
+
 						if( str[j] >= 'A' && str[j] <= 'Z' )
 							auxBuf << str[j];
 						else
 							break;
+
+						++j;
+					}
 
 				}else{
 
 					bool done = false;
 					++j;
 
-					for( natural i = 0; i != 3; ++i, ++j)
+					while( true ){
+
 						if( str[j] >= 'A' && str[j] <= 'Z' ){
 
 							auxBuf << str[j];
@@ -323,11 +338,17 @@ natural TableCell::process_rule( AeternalBuffer& text, AeternalBuffer& auxBuf, c
 						}else
 							break;
 
+						++j;
+					}
+
 					if( !done )
 						break;	//Returns to the main loop...
 				}
 
-				const natural column = Converter::parse_String_Column(auxBuf.size(),aux = auxBuf.compileAndRelease());
+				const natural lenght = auxBuf.size();
+				aux = auxBuf.compileAndRelease();
+
+				const natural column = Converter::parse_String_Column(lenght,aux);
 				delete[] aux;
 
 				if( str[j] != '$' && !( str[j] >= '0' && str[j] <= '9' ) )

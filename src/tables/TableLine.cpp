@@ -18,10 +18,13 @@ return aux;}
 
 void TableLine::setLine( const char * const line) noexcept try{
 
+	static thread_local AeternalBuffer buf;
 	natural i = 0, empty = 0;
 	bool isLast = false;
-	AeternalBuffer buf;
 	char aux;
+
+	if( !buf.empty() )
+		buf.justRelease();
 
 	while( !isLast ){
 
@@ -77,7 +80,7 @@ void TableLine::update_line( const progression_t pt, const apply_on where, const
 	if( aux == nullptr )
 		return ;
 
-	if( this->FIRST == nullptr ){	//An empty line
+	if( this->FIRST == nullptr ){	//An empty line, what means an update in lines...
 
 		this->FIRST = ( this->LAST = aux->getCellApplying(pt,where,pt == progression_t::GP ? pow(step,NbIter) : step*NbIter,NbIter) );
 		aux = aux->getNext();
@@ -85,8 +88,11 @@ void TableLine::update_line( const progression_t pt, const apply_on where, const
 		this->NbCells = other.NbCells;
 		this->NbEmpty = other.NbEmpty;
 
-	}else
+	}else{
+
+		this->LAST->setNbNextEmpty(this->LAST->getNbNextEmpty()+other.NbEmpty);
 		this->NbCells += other.NbCells;
+	}
 
 	TableCell * temp;
 
