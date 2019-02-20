@@ -31,18 +31,16 @@ natural Converter::parse_String_Column( natural legth, const char * const column
 
 //The parse is made correctly until: "MWLQKWU" == "4294967295", that is the biggest natural number on 32 bits variable.
 
+	runtime_assert_nullptr_excpt(column,"natural Converter::parse_String_Column(natural,const char*)");
 	bigNatural aux = 1, sum = 0;
 
-	if( column != nullptr ){
+	while( legth != 0 ){
 
-		while( legth != 0 ){
-
-			sum += aux * ( column[ legth -= 1 ] - 'A' + 1 );
-			aux *= 26;
-		}
-
-		if( sum > TableColumnLimit )
-			fail_report("One column exceeds the limit suported by the specified table program.",ERROR_CODE::_DOMAIN);
+		sum += aux * ( column[ legth -= 1 ] - 'A' + 1 );
+		aux *= 26;
 	}
+
+	if( sum > TableColumnLimit )
+		fail_report("One column exceeds the limit suported by the specified table program.",ERROR_CODE::_DOMAIN);
 
 return sum;}

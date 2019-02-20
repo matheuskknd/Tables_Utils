@@ -25,7 +25,7 @@ CellPart* Rule::applyInColumns( const natural iter, const int step, const operat
 
 	try{
 
-		temp = new Rule(step,frequency,since,until,vigor == 0 ? 0 : vigor-1,pgt,aplo);
+		temp = new Rule(this->step,this->frequency,this->since,this->until,this->vigor == 0 ? 0 : this->vigor-1,this->pgt,this->aplo);
 
 	}catch(bad_alloc){
 
@@ -77,7 +77,7 @@ CellPart* Rule::applyInLines( const natural iter, const int step, const operatio
 
 	try{
 
-		temp = new Rule(step,frequency,since,until,vigor == 0 ? 0 : vigor-1,pgt,aplo);
+		temp = new Rule(this->step,this->frequency,this->since,this->until,this->vigor == 0 ? 0 : this->vigor-1,this->pgt,this->aplo);
 
 	}catch(bad_alloc){
 

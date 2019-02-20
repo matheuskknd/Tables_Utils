@@ -37,13 +37,15 @@ void TableCell::setCell( const char * const str) noexcept try{
 
 			if( str[j] == '$' || ( str[j] >= 'A' && str[j] <= 'Z' ) ){
 
+				if( !auxBuf.empty() )
+					auxBuf.justRelease();
+
 				const bool constC = str[j] == '$';
-				auxBuf.justRelease();
 
 				if( constC )
 					++j;
 
-				if( str[j] < 'A' && str[j] > 'Z' )
+				if( str[j] < 'A' || str[j] > 'Z' )
 					break;			//It's not a formula, so it returns to the main loop...
 
 				do{
@@ -53,15 +55,12 @@ void TableCell::setCell( const char * const str) noexcept try{
 
 				}while( str[j] >= 'A' && str[j] <= 'Z' );
 
-				if( str[j] != '$' && !( str[j] >= '0' && str[j] <= '9' ) )
-					break;			//It's not a formula, so it returns to the main loop...
-
 				const bool constL = str[j] == '$';
 
 				if( constL )
 					++j;
 
-				if( str[j] < '0' && str[j] > '9' )
+				if( str[j] < '0' || str[j] > '9' )
 					break;			//It's not a formula, so it returns to the main loop...
 
 				const natural line = strtoul(str+j,&aux,10);
@@ -294,13 +293,15 @@ natural TableCell::process_rule( AeternalBuffer& text, AeternalBuffer& auxBuf, c
 
 			if( str[j] == '$' || ( str[j] >= 'A' && str[j] <= 'Z' ) ){
 
+				if( !auxBuf.empty() )
+					auxBuf.justRelease();
+
 				const bool constC = str[j] == '$';
-				auxBuf.justRelease();
 
 				if( constC )
 					++j;
 
-				if( str[j] < 'A' && str[j] > 'Z' )
+				if( str[j] < 'A' || str[j] > 'Z' )
 					break;			//It's not a formula, so it returns to the main loop...
 
 				do{
@@ -310,15 +311,12 @@ natural TableCell::process_rule( AeternalBuffer& text, AeternalBuffer& auxBuf, c
 
 				}while( str[j] >= 'A' && str[j] <= 'Z' );
 
-				if( str[j] != '$' && !( str[j] >= '0' && str[j] <= '9' ) )
-					break;			//It's not a formula, so it returns to the main loop...
-
 				const bool constL = str[j] == '$';
 
 				if( constL )
 					++j;
 
-				if( str[j] < '0' && str[j] > '9' )
+				if( str[j] < '0' || str[j] > '9' )
 					break;			//It's not a formula, so it returns to the main loop...
 
 				const natural line = strtoul(str+j,&aux,10);
