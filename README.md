@@ -11,10 +11,10 @@ Also providing new features that the command line software haven't. Every things
 * Save/load option for pipelines
 * Save option for intermediate files
 
-*For version 2.0* - it's intended to add a programming feature that will allow users to create much more complex pipelines. Features:
+*Version 2.0* - it's intended to add a programming feature that will allow users to create much more complex pipelines. Features:
 
 * The user will be capable to apply non-mathematical transformations to the tables as tables, or as if they were text at any momment of the pipeline (user will need to program). For this a Python like programming language will be added to the transformations.
 
-*For version 2.1* - the focus is on those users whose are newbies on programmation or doesn't like/know python. Features:
+*Version 2.1* - the focus is on those users whose are newbies on programmation or doesn't like/know Python. Features:
 
 * A visual programming language
