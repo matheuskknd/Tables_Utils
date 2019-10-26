@@ -1,4 +1,4 @@
-# Tables_Utils
+# Tables_Utils_GUI
 
 This software main ideia is to help common users to use the original Tables_Utils command line application through a **User Friendly Grafical User Interface**.
 Also providing new features that the command line software haven't. Every things were though to make the user life less complicated. We really hope to achive this. =)
